@@ -40,6 +40,11 @@ export class IndikatorKinerjaUtamaService {
     return { data, recordsTotal, recordsFiltered };
   }
 
+  async findMultipleId(ids: Array<string>) {
+    console.log(ids);
+    return this.ikuModel.findAll({ where: { id: { [Op.in]: ids } } });
+  }
+
   findOne(id: number) {
     return this.ikuModel.findByPk(id, { include: IndikatorKinerjaUtamaScope.all });
   }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto, GetAllUserDto, LoginDto, UpdateUserDto } from "./dto";
 import { Public } from "../../common";
@@ -31,11 +31,18 @@ export class UserController {
     return this.userService.validateLogin(body);
   }
 
+  @Public(false)
+  @Get("permissions")
+  permissions(@Req() req: Record<string, any>) {
+    return this.userService.permissions(req.user?.role_id);
+  }
+
   @Get()
   findAll(@Query() query: GetAllUserDto) {
     return this.userService.findAll(query);
   }
 
+  @Public(false)
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.userService.findOne(+id);
@@ -44,8 +51,6 @@ export class UserController {
   @ApiConsumes("multipart/form-data")
   @Patch(":id")
   async update(@Param("id") id: string, @Body() body: UpdateUserDto) {
-    console.log(body);
-
     if (body.avatar) {
       body.avatar = { file: body.avatar, ...(await fileType.fromBuffer(body.avatar as Buffer)) };
     }

@@ -40,6 +40,10 @@ export class PenyusunanRktController {
     }
 
     body.kak = { file: body.kak, ...(await fileType.fromBuffer(body.kak as Buffer)) };
+    body.surat_usulan = {
+      file: body.surat_usulan,
+      ...(await fileType.fromBuffer(body.surat_usulan as Buffer)),
+    };
     body.referensi_harga = {
       file: body.referensi_harga,
       ...(await fileType.fromBuffer(body.referensi_harga as Buffer)),
@@ -75,6 +79,7 @@ export class PenyusunanRktController {
     @Req() req: Record<string, any>,
   ) {
     body.verified_by = req.user.id;
+    body.verified_name = req.user.name;
     return this.penyusunanRktService.approval(+id, body);
   }
 

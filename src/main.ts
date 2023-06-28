@@ -11,9 +11,10 @@ import { ValidationMessage } from "./common";
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
 
   app.enableCors();
-  app.use(helmet({ hidePoweredBy: true }));
+  app.use(helmet({ hidePoweredBy: true, crossOriginResourcePolicy: false }));
   await app.register(fm, {
     attachFieldsToBody: "keyValues",
+    limits: { fileSize: 5 * 1024 * 1024 }, //max 5mb
     onFile: async (part) => {
       part["value"] = await part.toBuffer();
     },

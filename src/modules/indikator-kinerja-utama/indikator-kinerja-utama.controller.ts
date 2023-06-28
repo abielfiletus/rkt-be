@@ -6,6 +6,7 @@ import {
   UpdateIndikatorKinerjaUtamaDto,
 } from "./dto";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Public } from "../../common";
 
 @ApiTags("Indikator Kinerja Utama")
 @Controller("indikator-kinerja-utama")
@@ -19,15 +20,24 @@ export class IndikatorKinerjaUtamaController {
     return this.indikatorKinerjaUtamaService.create(body);
   }
 
+  @Public(false)
   @Get()
   findAll(@Query() query: GetAllIndikatorKinerjaUtamaDto) {
     return this.indikatorKinerjaUtamaService.findAll(query);
   }
 
+  @Public(false)
+  @Get("multiple")
+  findMultipleIds(@Query("id") id: string) {
+    return this.indikatorKinerjaUtamaService.findMultipleId(id.split(","));
+  }
+
+  @Public(false)
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.indikatorKinerjaUtamaService.findOne(+id);
   }
+  a;
 
   @Patch(":id")
   update(@Param("id") id: string, @Body() body: UpdateIndikatorKinerjaUtamaDto) {

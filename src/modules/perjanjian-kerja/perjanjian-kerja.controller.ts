@@ -17,7 +17,7 @@ import { UpdatePerjanjianKerjaDto } from "./dto/update-perjanjian-kerja.dto";
 import { GetAllPerjanjianKerjaDto } from "./dto/get-all-perjanjian-kerja.dto";
 import { VerifyPerjanjianKerjaDto } from "./dto/verify-perjanjian-kerja.dto";
 import { ApiBearerAuth, ApiConsumes, ApiTags } from "@nestjs/swagger";
-import { ValidationMessage } from "../../common";
+import { Public, ValidationMessage } from "../../common";
 import * as fileType from "file-type";
 
 @ApiTags("Perjanjian Kerja")
@@ -52,6 +52,12 @@ export class PerjanjianKerjaController {
   @Get("filter")
   filter() {
     return this.perjanjianKerjaService.filter();
+  }
+
+  @Get("download-draft/:id")
+  @Public()
+  downloadDraft(@Param("id") id: string) {
+    return this.perjanjianKerjaService.download(+id);
   }
 
   @Get(":id")

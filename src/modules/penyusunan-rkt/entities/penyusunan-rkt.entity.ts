@@ -7,39 +7,32 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { RencanaStrategi } from "../../rencana-strategis/entities/rencana-strategi.entity";
 import { RktXIku } from "./rkt-x-iku.entity";
 import { RktXRab } from "./rkt-x-rab.entity";
 import { IkuXAksi } from "./iku-x-aksi.entity";
 import { User } from "../../user/entities/user.entity";
 import { VerificationStatus } from "../../../common";
+import { Role } from "../../role/entities/role.entity";
+import { IndikatorKinerjaUtama } from "../../indikator-kinerja-utama/entities/indikator-kinerja-utama.entity";
 
 @Table({ freezeTableName: true })
 export class PenyusunanRkt extends Model {
+  @Column({
+    type: DataType.STRING(50),
+  })
+  no_pengajuan: string;
+
   @Column({
     type: DataType.CHAR(4),
     allowNull: false,
   })
   tahun: string;
 
-  @ForeignKey(() => RencanaStrategi)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  rencana_strategi_id: number;
-
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
   name: string;
-
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: false,
-  })
-  satuan_kerja: string;
 
   @Column({
     type: DataType.STRING(40),
@@ -52,6 +45,11 @@ export class PenyusunanRkt extends Model {
     allowNull: false,
   })
   usulan_anggaran: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  surat_usulan: string;
 
   @Column({
     type: DataType.STRING,
@@ -69,10 +67,16 @@ export class PenyusunanRkt extends Model {
   pendukung: string;
 
   @Column({
-    type: DataType.ENUM("0", "1", "2", "3", "4"),
-    defaultValue: VerificationStatus.pending,
+    type: DataType.CHAR(1),
+    defaultValue: VerificationStatus.on_verification,
   })
   status: VerificationStatus;
+
+  @Column({ type: DataType.INTEGER })
+  verification_role_target: number;
+
+  @Column({ type: DataType.JSONB })
+  history: Record<string, any>;
 
   @Column({
     type: DataType.STRING,
@@ -92,14 +96,14 @@ export class PenyusunanRkt extends Model {
   })
   verified_by: number;
 
+  @BelongsTo(() => Role, "verification_role_target")
+  verification_role: Role;
+
   @BelongsTo(() => User, "submit_by")
   user_submit: User;
 
   @BelongsTo(() => User, "verified_by")
   user_verified: User;
-
-  @BelongsTo(() => RencanaStrategi, "rencana_strategi_id")
-  rencana_strategi: RencanaStrategi;
 
   @HasMany(() => RktXIku, "rkt_id")
   rkt_x_iku: RktXIku[];
@@ -112,10 +116,27 @@ export const PenyusunanRktScope = {
   all: [
     { model: User, as: "user_submit", attributes: { exclude: ["password"] } },
     { model: User, as: "user_verified", attributes: { exclude: ["password"] } },
-    { model: RencanaStrategi, as: "rencana_strategi" },
-    { model: RktXIku, as: "rkt_x_iku", include: [{ model: IkuXAksi, as: "iku_x_aksi" }] },
+    {
+      model: RktXIku,
+      as: "rkt_x_iku",
+      include: [
+        { model: IkuXAksi, as: "iku_x_aksi" },
+        { model: IndikatorKinerjaUtama, as: "iku" },
+      ],
+    },
     { model: RktXRab, as: "rkt_x_rab" },
+    { model: Role, as: "verification_role" },
   ],
-  user_submit: [{ model: User, as: "user_submit", attributes: { exclude: ["password"] } }],
-  rencana_strategi: [{ model: RencanaStrategi, as: "rencana_strategi" }],
+  user_submit: [
+    { model: User, as: "user_submit", attributes: { exclude: ["password"] } },
+    { model: Role, as: "verification_role" },
+  ],
+  iku: {
+    model: RktXIku,
+    as: "rkt_x_iku",
+    include: [
+      { model: IkuXAksi, as: "iku_x_aksi" },
+      { model: IndikatorKinerjaUtama, as: "iku" },
+    ],
+  },
 };

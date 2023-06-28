@@ -28,6 +28,9 @@ export const parseStringToByte = (size: string) => {
 export const isNotEmpty = (value: any) => typeof value === "boolean" || value;
 
 export const prepareQuery = (params: Record<string, any>, scopes: Record<string, any>) => {
+  params.limit ??= 10;
+  params.page ??= 1;
+
   const limit = params.limit;
   const offset = (params.page - 1) * params.limit;
   const order = [];
@@ -45,3 +48,50 @@ export const prepareQuery = (params: Record<string, any>, scopes: Record<string,
 
   return { limit, offset, order, include, where };
 };
+
+export const romanize = (num) => {
+  if (isNaN(num)) return NaN;
+  const digits = String(+num).split("");
+  const key = [
+    "",
+    "C",
+    "CC",
+    "CCC",
+    "CD",
+    "D",
+    "DC",
+    "DCC",
+    "DCCC",
+    "CM",
+    "",
+    "X",
+    "XX",
+    "XXX",
+    "XL",
+    "L",
+    "LX",
+    "LXX",
+    "LXXX",
+    "XC",
+    "",
+    "I",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+  ];
+  let roman = "";
+  let i = 3;
+  while (i--) roman = (key[+digits.pop() + i * 10] || "") + roman;
+  return Array(+digits.join("") + 1).join("M") + roman;
+};
+
+export const currencyFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});

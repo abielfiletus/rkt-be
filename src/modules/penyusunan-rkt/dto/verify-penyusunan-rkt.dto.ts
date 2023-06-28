@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { VerificationStatus } from "../../../common";
 import { IsEnum, IsNotEmpty, ValidateIf } from "class-validator";
+import { Transform } from "class-transformer";
 
 export class VerifyPenyusunanRktDto {
   @ApiProperty({ enum: Object.keys(VerificationStatus) })
   @IsNotEmpty()
-  @IsEnum(Object.keys(VerificationStatus))
+  @IsEnum(Object.values(VerificationStatus))
+  @Transform(({ value }) => VerificationStatus[value])
   status: VerificationStatus;
 
   @ApiProperty()
@@ -14,4 +16,5 @@ export class VerifyPenyusunanRktDto {
   notes: string;
 
   verified_by: number;
+  verified_name: string;
 }

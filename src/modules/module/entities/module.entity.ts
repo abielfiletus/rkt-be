@@ -7,4 +7,9 @@ export class Module extends Model {
     allowNull: false,
   })
   name: string;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  order: number;
 }

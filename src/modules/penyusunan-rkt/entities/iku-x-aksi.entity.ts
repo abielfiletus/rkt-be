@@ -24,31 +24,6 @@ export class IkuXAksi extends Model {
   })
   rencana_aksi: string;
 
-  @Column({
-    type: DataType.INTEGER,
-  })
-  tw_1: number;
-
-  @Column({
-    type: DataType.INTEGER,
-  })
-  tw_2: number;
-
-  @Column({
-    type: DataType.INTEGER,
-  })
-  tw_3: number;
-
-  @Column({
-    type: DataType.INTEGER,
-  })
-  tw_4: number;
-
-  @Column({
-    type: DataType.INTEGER,
-  })
-  total: number;
-
   @BelongsTo(() => RktXIku, "rkt_x_iku_id")
   rkt_x_iku: RktXIku;
 }

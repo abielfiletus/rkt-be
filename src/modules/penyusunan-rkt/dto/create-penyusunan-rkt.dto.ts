@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
 import { TransformObject } from "../../../common/decorator/transform-object.decorator";
 
@@ -7,6 +7,16 @@ class IkuXAksi {
   @ApiProperty()
   @IsNotEmpty()
   rencana_aksi: string;
+
+  iku_id: number;
+}
+
+export class RktXIkuDto {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  @Type(() => Number)
+  iku_id: number;
 
   @ApiProperty()
   @IsNumber()
@@ -38,16 +48,6 @@ class IkuXAksi {
   @Type(() => Number)
   total: number;
 
-  iku_id: number;
-}
-
-export class RktXIkuDto {
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  @Type(() => Number)
-  iku_id: number;
-
   @ApiProperty()
   @ValidateNested()
   @IsNotEmpty()
@@ -76,18 +76,8 @@ export class CreatePenyusunanRktDto {
   tahun: string;
 
   @ApiProperty()
-  @IsInt()
-  @IsNotEmpty()
-  @Type(() => Number)
-  rencana_strategi_id: number;
-
-  @ApiProperty()
   @IsNotEmpty()
   name: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  satuan_kerja: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -108,6 +98,10 @@ export class CreatePenyusunanRktDto {
   @IsNotEmpty()
   @TransformObject(true)
   rab_data: Record<string, any>[];
+
+  @ApiProperty({ required: true, type: "string", format: "binary" })
+  @IsOptional()
+  surat_usulan: Buffer | Record<string, any>;
 
   @ApiProperty({ required: true, type: "string", format: "binary" })
   @IsOptional()

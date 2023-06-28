@@ -13,6 +13,11 @@ import { RktXIku } from "../../modules/penyusunan-rkt/entities/rkt-x-iku.entity"
 import { IkuXAksi } from "../../modules/penyusunan-rkt/entities/iku-x-aksi.entity";
 import { PerjanjianKerja } from "../../modules/perjanjian-kerja/entities/perjanjian-kerja.entity";
 import { Department } from "../../modules/department/entities/department.entity";
+import { RktNoteHistory } from "../../modules/rkt-note-history/entities/rkt-note-history.entity";
+import { Document } from "../../modules/document/entities/document.entity";
+import { Config } from "../../modules/config/entities/config.entity";
+import { Capaian } from "../../modules/capaian/entities/capaian.entity";
+import { CapaianXIku } from "../../modules/capaian/entities/capaian-x-iku";
 
 export const databaseProviders = [
   {
@@ -41,6 +46,11 @@ export const databaseProviders = [
         IkuXAksi,
         PerjanjianKerja,
         Department,
+        RktNoteHistory,
+        Document,
+        Config,
+        Capaian,
+        CapaianXIku,
       ]);
       await sequelize.sync();
       return sequelize;

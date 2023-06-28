@@ -18,6 +18,11 @@ import { PenyusunanRktModule } from "./modules/penyusunan-rkt/penyusunan-rkt.mod
 import { PerjanjianKerjaModule } from "./modules/perjanjian-kerja/perjanjian-kerja.module";
 import { RoleModule } from "./modules/role/role.module";
 import { DepartmentModule } from "./modules/department/department.module";
+import { RktNoteHistoryModule } from "./modules/rkt-note-history/rkt-note-history.module";
+import { DocumentModule } from "./modules/document/document.module";
+import { ConfigurationModule } from "./modules/config/config.module";
+import { CapaianModule } from "./modules/capaian/capaian.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
 
 @Module({
   imports: [
@@ -32,6 +37,11 @@ import { DepartmentModule } from "./modules/department/department.module";
     PerjanjianKerjaModule,
     RoleModule,
     DepartmentModule,
+    RktNoteHistoryModule,
+    DocumentModule,
+    ConfigurationModule,
+    CapaianModule,
+    DashboardModule,
     ConfigModule.forRoot({
       envFilePath: `${process.env.NODE_ENV ? process.cwd() + "/" + process.env.NODE_ENV : ""}.env`,
       validationSchema: Joi.object({

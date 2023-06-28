@@ -10,11 +10,14 @@ import { InjectRedis } from "@liaoliaots/nestjs-redis";
 import Redis from "ioredis";
 import * as fs from "fs-extra";
 import { isNotEmpty, prepareQuery, RollbackFile, UploadFile } from "../../util";
+import { Permission } from "../permission/entities/permission.entity";
+import { Module } from "../module/entities/module.entity";
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(User.name) private readonly userModel: typeof User,
+    @Inject(Permission.name) private readonly permissionModel: typeof Permission,
     @InjectRedis() private readonly redis: Redis,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -160,6 +163,34 @@ export class UserService {
 
   remove(id: number) {
     return this.userModel.destroy({ where: { id } });
+  }
+
+  async permissions(role_id: number) {
+    const data = await this.permissionModel.findAll({
+      where: { role_id },
+      include: { model: Module },
+      order: [[{ model: Module, as: "module" }, "order", "asc"]],
+    });
+
+    const res = [];
+    data.map((item) => {
+      const action = [];
+
+      if (item.Approve) action.push("approve");
+      if (item.Create) action.push("create");
+      if (item.Delete) action.push("delete");
+      if (item.Download) action.push("download");
+      if (item.Read) action.push("read");
+      if (item.Update) action.push("update");
+
+      let subject = item.module.name;
+      if (subject === "document") subject = "dokumen";
+      if (subject === "config") subject = "pengaturan";
+
+      res.push({ subject, action });
+    });
+
+    return res;
   }
 
   private async _uploadAvatar(avatar: Record<string, any>, name: string) {

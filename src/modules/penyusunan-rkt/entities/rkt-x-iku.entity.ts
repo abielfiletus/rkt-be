@@ -27,9 +27,37 @@ export class RktXIku extends Model {
   })
   iku_id: number;
 
+  @Column({
+    type: DataType.INTEGER,
+  })
+  tw_1: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  tw_2: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  tw_3: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  tw_4: number;
+
+  @Column({
+    type: DataType.INTEGER,
+  })
+  total: number;
+
   @BelongsTo(() => PenyusunanRkt, "rkt_id")
   rkt: PenyusunanRkt;
 
   @HasMany(() => IkuXAksi, "rkt_x_iku_id")
   iku_x_aksi: IkuXAksi[];
+
+  @BelongsTo(() => IndikatorKinerjaUtama, "iku_id")
+  iku: IndikatorKinerjaUtama;
 }

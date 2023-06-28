@@ -6,11 +6,18 @@ import { RktXRab } from "./entities/rkt-x-rab.entity";
 import { RktXIku } from "./entities/rkt-x-iku.entity";
 import { IkuXAksi } from "./entities/iku-x-aksi.entity";
 import { Op, Transaction } from "sequelize";
-import { prepareQuery, RollbackFile, UploadFile } from "../../util";
-import { HttpMessage, ValidationMessage, VerificationStatus } from "../../common";
+import { prepareQuery, RollbackFile, romanize, UploadFile } from "../../util";
+import {
+  HttpMessage,
+  ValidationMessage,
+  VerificationRoleStep,
+  VerificationStatus,
+} from "../../common";
 import { IndikatorKinerjaUtama } from "../indikator-kinerja-utama/entities/indikator-kinerja-utama.entity";
 import { GetAllPenyusunanRktDto } from "./dto/get-all-penyusunan-rkt.dto";
 import { PerjanjianKerja } from "../perjanjian-kerja/entities/perjanjian-kerja.entity";
+import { RktNoteHistory } from "../rkt-note-history/entities/rkt-note-history.entity";
+import { CapaianService } from "../capaian/capaian.service";
 
 @Injectable()
 export class PenyusunanRktService {
@@ -27,6 +34,9 @@ export class PenyusunanRktService {
     private readonly ikuModel: typeof IndikatorKinerjaUtama,
     @Inject(PerjanjianKerja.name)
     private readonly pkModel: typeof PerjanjianKerja,
+    @Inject(RktNoteHistory.name)
+    private readonly historyModel: typeof RktNoteHistory,
+    private readonly capaianService: CapaianService,
   ) {}
 
   async create(body: CreatePenyusunanRktDto) {
@@ -36,43 +46,44 @@ export class PenyusunanRktService {
       const rkt = await this.rktModel.create(
         {
           tahun: body.tahun,
-          rencana_strategi_id: body.rencana_strategi_id,
           name: body.name,
-          satuan_kerja: body.satuan_kerja,
           target_perjanjian_kerja: body.target_perjanjian_kerja,
           usulan_anggaran: body.usulan_anggaran,
           submit_by: body.submit_by,
+          status: VerificationStatus.on_verification,
+          verification_role_target: 2,
         },
         { transaction: trx },
       );
 
-      const [kak, referensi_harga, pendukung] = await Promise.all([
+      const [surat_usulan, kak, referensi_harga, pendukung] = await Promise.all([
+        this._uploadFile(body.surat_usulan, "surat_usulan", "surat_usulan-" + rkt.id),
         this._uploadFile(body.kak, "kak", "kak-" + rkt.id),
         this._uploadFile(body.referensi_harga, "referensi_harga", "referensi_harga-" + rkt.id),
-        this._uploadFile(
-          body.pendukung,
-          "pendukung",
-          "pendukung-" + rkt.id,
-          ["jpg", "jpeg", "png", "pdf"],
-          "2 mb",
-        ),
+        this._uploadFile(body.pendukung, "pendukung", "pendukung-" + rkt.id),
       ]);
 
+      file.push(surat_usulan);
       file.push(kak);
       file.push(referensi_harga);
       file.push(pendukung);
+
+      const month = new Date().getMonth() + 1;
+      const year = new Date().getFullYear();
+      const no_pengajuan = rkt.id + "/EPB/" + romanize(month) + "/" + year;
 
       const [rkt_x_iku, rkt_x_rab, newRkt] = await Promise.all([
         this._createRktXIku(body.iku_data, rkt.id, trx),
         this._createRktXRab(body.rab_data, rkt.id, trx),
         this.rktModel.update(
-          { kak, referensi_harga, pendukung },
+          { surat_usulan, kak, referensi_harga, pendukung, no_pengajuan },
           { where: { id: rkt.id }, transaction: trx, returning: true },
         ),
-        this.pkModel.create(
-          { rkt_id: rkt.id, submit_by: body.submit_by, status: VerificationStatus.no_action },
-          { transaction: trx },
-        ),
+        this.capaianService.create({
+          rkt_id: rkt.id,
+          iku_data: body.iku_data.map((item) => item.iku_id),
+          trx,
+        }),
       ]);
 
       await trx.commit();
@@ -147,7 +158,7 @@ export class PenyusunanRktService {
         throw new HttpException(HttpMessage.notFound, HttpStatus.NOT_FOUND);
       }
 
-      if (![VerificationStatus.pending, VerificationStatus.revision].includes(check.status)) {
+      if (![VerificationStatus.rejected, VerificationStatus.revision].includes(check.status)) {
         throw new HttpException(HttpMessage.cantUpdateCausedVerification, HttpStatus.BAD_REQUEST);
       }
 
@@ -161,6 +172,15 @@ export class PenyusunanRktService {
       delete mock.iku_data;
       delete mock.rab_data;
 
+      if (body.surat_usulan) {
+        const surat_usulan = await this._uploadFile(
+          body.surat_usulan,
+          "surat_usulan",
+          "surat_usulan-" + check.id,
+        );
+        mock.surat_usulan = surat_usulan;
+        file.push(surat_usulan);
+      }
       if (body.kak) {
         const kak = await this._uploadFile(body.kak, "kak", "kak-" + check.id);
         mock.kak = kak;
@@ -180,8 +200,6 @@ export class PenyusunanRktService {
           body.pendukung,
           "pendukung",
           "pendukung-" + check.id,
-          ["jpg", "jpeg", "png", "pdf"],
-          "2 mb",
         );
         mock.pendukung = pendukung;
         file.push(pendukung);
@@ -203,28 +221,82 @@ export class PenyusunanRktService {
   }
 
   async approval(id: number, body: VerifyPenyusunanRktDto) {
+    const trx = await this.rktModel.sequelize.transaction();
     try {
       const check = await this.rktModel.findByPk(id, { raw: true });
+      const status = (" " + body.status).slice(1);
 
       if (!check) {
         throw new HttpException(HttpMessage.notFound, HttpStatus.NOT_FOUND);
       }
 
-      if (check.status !== VerificationStatus.pending) {
+      if (
+        [
+          VerificationStatus.rejected,
+          VerificationStatus.revision,
+          VerificationStatus.done,
+        ].includes(check.status)
+      ) {
         throw new HttpException(HttpMessage.dontNeedVerification, HttpStatus.BAD_REQUEST);
       }
 
-      const res = await this.rktModel.update(
+      const history = check.history || { user: [], approvedAt: [] };
+      let verification_role_target = check.verification_role_target;
+
+      if (body.status === VerificationStatus.approved) {
+        verification_role_target = VerificationRoleStep[Math.max(history.user.length, 1)];
+
+        if (verification_role_target) {
+          body.status = VerificationStatus.on_verification;
+
+          history.user.push(body.verified_name);
+          history.approvedAt.push(new Date().toISOString());
+        } else {
+          verification_role_target = null;
+          body.status = VerificationStatus.done;
+        }
+      }
+
+      if (body.status === VerificationStatus.rejected) {
+        verification_role_target = VerificationRoleStep[0];
+      }
+
+      await this.historyModel.create(
         {
-          status: VerificationStatus[body.status],
-          verified_by: body.verified_by,
-          notes: body.notes,
+          rkt_id: check.id,
+          user_id: body.verified_by,
+          note: body.notes,
+          status,
         },
-        { where: { id }, returning: true },
+        { transaction: trx },
       );
 
+      const res = await this.rktModel.update(
+        {
+          status: body.status,
+          verified_by: body.verified_by,
+          notes: body.notes,
+          history,
+          verification_role_target,
+        },
+        { where: { id }, transaction: trx, returning: true },
+      );
+
+      if (body.status === VerificationStatus.done) {
+        await this.pkModel.create(
+          {
+            rkt_id: id,
+            submit_by: check.submit_by,
+            status: VerificationStatus.no_action,
+          },
+          { transaction: trx },
+        );
+      }
+
+      await trx.commit();
       return res[1][0];
     } catch (err) {
+      await trx.rollback();
       throw err;
     }
   }
@@ -237,6 +309,7 @@ export class PenyusunanRktService {
         this.rktXRabModel.destroy({ where: { rkt_id: id }, transaction: trx }),
         this.rktXIkuModel.destroy({ where: { rkt_id: id }, transaction: trx }),
         this.ikuXAksiModel.destroy({ where: { rkt_id: id }, transaction: trx }),
+        this.pkModel.destroy({ where: { rkt_id: id }, transaction: trx }),
       ]);
 
       await trx.commit();
@@ -249,7 +322,6 @@ export class PenyusunanRktService {
 
   private async _createRktXIku(data: Array<Record<string, any>>, rkt_id: number, trx: Transaction) {
     const res = [];
-    console.log(data);
     await Promise.all(
       data.map(async (iku, i) => {
         if (!iku.iku_id) {
@@ -268,7 +340,15 @@ export class PenyusunanRktService {
           );
         }
         const inserted = await this.rktXIkuModel.create(
-          { rkt_id, iku_id: iku.iku_id },
+          {
+            rkt_id,
+            iku_id: iku.iku_id,
+            tw_1: iku.tw_1,
+            tw_2: iku.tw_2,
+            tw_3: iku.tw_3,
+            tw_4: iku.tw_4,
+            total: iku.total,
+          },
           { transaction: trx },
         );
 
@@ -308,7 +388,7 @@ export class PenyusunanRktService {
     field: string,
     name: string,
     allowedExt = ["pdf"],
-    allowedSize = "300 kb",
+    allowedSize = "2 mb",
   ) {
     return await UploadFile({
       file: upload.file,

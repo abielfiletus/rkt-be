@@ -7,6 +7,7 @@ import * as fs from "fs-extra";
 
 export const UploadFile = async (params: IUploadFile) => {
   if (params.file) {
+    params.filename = params.filename.replace(/ /g, "-");
     const err: IOutputResponse = {
       code: HttpStatus.UNPROCESSABLE_ENTITY,
       status: false,

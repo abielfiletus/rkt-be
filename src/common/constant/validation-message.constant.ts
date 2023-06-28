@@ -5,6 +5,7 @@ export const ValidationMessage = {
   minLength: (min: number) => `minimal ${min} karakter`,
   number: "harus berupa angka",
   enum: (enums: string[]) => `harus di antara ${enums.join(" ")}`,
+  in: (value: any[]) => `harus di antara ${value.join(" ")}`,
   notFound: "tidak ditemukan",
   notMatch: "tidak sesuai",
   alreadyRegistered: "sudah terdaftar",

@@ -1,7 +1,7 @@
 import { ExecutionContext, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
-import { IS_PUBLIC_KEY } from "../decorator";
+import { BYPASS_KEY, IS_PUBLIC_KEY } from "../decorator";
 import { IOutputResponse } from "../interface";
 import { HttpMessage } from "../constant";
 
@@ -16,7 +16,12 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) return true;
+    const bypass = this.reflector.getAllAndOverride<boolean>(BYPASS_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic && bypass) return true;
 
     const req = context.switchToHttp().getRequest();
 

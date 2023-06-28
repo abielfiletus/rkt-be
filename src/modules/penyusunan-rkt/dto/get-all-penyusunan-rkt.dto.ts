@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsOptional, ValidateIf } from "class-validator";
-import { PaginationDto, VerificationStatus } from "../../../common";
+import { PaginationDto, ValidationMessage, VerificationStatus } from "../../../common";
 import { PenyusunanRktScope } from "../entities/penyusunan-rkt.entity";
 import { Type } from "class-transformer";
 
@@ -28,7 +28,9 @@ export class GetAllPenyusunanRktDto extends PaginationDto {
 
   @ApiProperty({ required: false, enum: Object.values(VerificationStatus) })
   @ValidateIf((obj) => obj.status)
-  @IsEnum(Object.values(VerificationStatus))
+  @IsEnum(Object.values(VerificationStatus), {
+    message: ValidationMessage.enum(Object.values(VerificationStatus)),
+  })
   status: VerificationStatus;
 
   @ApiProperty({ required: false, enum: Object.keys(PenyusunanRktScope) })
