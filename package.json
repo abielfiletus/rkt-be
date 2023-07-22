@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "build:docker": "docker buildx build --pull --platform linux/amd64 -t index.docker.io/abielfiletus/epb:backend-v0.0.1 . && docker push abielfiletus/epb:backend-v0.0.1"
   },
   "dependencies": {
     "@fastify/multipart": "^7.4.1",

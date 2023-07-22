@@ -12,6 +12,8 @@ import { ValidationMessage } from "./common";
 
   app.enableCors();
   app.use(helmet({ hidePoweredBy: true, crossOriginResourcePolicy: false }));
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   await app.register(fm, {
     attachFieldsToBody: "keyValues",
     limits: { fileSize: 5 * 1024 * 1024 }, //max 5mb

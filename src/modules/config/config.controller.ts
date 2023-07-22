@@ -3,6 +3,7 @@ import { ConfigService } from "./config.service";
 import { UpdateConfigDto } from "./dto/update-config.dto";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { GetAllConfigDto } from "./dto/get-all-config.dto";
+import { Public } from "../../common";
 
 @ApiTags("Config")
 @ApiBearerAuth()
@@ -15,6 +16,7 @@ export class ConfigController {
     return this.configService.findAll(query);
   }
 
+  @Public(false)
   @Get("by-key/:key")
   findByKey(@Param("key") key: string) {
     return this.configService.findByKey(key);

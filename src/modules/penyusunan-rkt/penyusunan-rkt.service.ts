@@ -9,6 +9,7 @@ import { Op, Transaction } from "sequelize";
 import { prepareQuery, RollbackFile, romanize, UploadFile } from "../../util";
 import {
   HttpMessage,
+  RejectionRoleTarget,
   ValidationMessage,
   VerificationRoleStep,
   VerificationStatus,
@@ -118,6 +119,13 @@ export class PenyusunanRktService {
     if (params.submit_prodi) where["$user_submit.kode_prodi$"] = params.submit_prodi;
     if (params.status) where.status = params.status;
 
+    if (params.user_role !== 1) {
+      where = {
+        ...where,
+        [Op.or]: [{ submit_by: params.user_id }, { verification_role_target: params.user_role }],
+      };
+    }
+
     const [data, recordsFiltered, recordsTotal] = await Promise.all([
       this.rktModel.findAll({ where, limit, offset, order, include }),
       this.rktModel.count({ distinct: true, where, include }),
@@ -131,11 +139,26 @@ export class PenyusunanRktService {
     return this.rktModel.findByPk(id, { include: PenyusunanRktScope.all });
   }
 
-  async filter() {
+  async filter(user_id: number, role: number) {
+    let where = "";
+
+    if (role !== 1) {
+      where = `WHERE (submit_by = ${user_id} OR verification_role_target = ${role})`;
+    }
+
     const [tahunData, submitUserData] = await Promise.all([
-      this.rktModel.findAll({ group: "tahun", attributes: ["tahun"] }),
+      this.rktModel.findAll({
+        group: "tahun",
+        attributes: ["tahun"],
+        where:
+          role !== 1
+            ? {
+                [Op.or]: [{ submit_by: user_id }, { verification_role_target: role }],
+              }
+            : {},
+      }),
       this.rktModel.sequelize.query(
-        `SELECT u.name FROM "PenyusunanRkt" pr JOIN "User" u on pr.submit_by = u.id GROUP BY u.name`,
+        `SELECT u.name FROM "PenyusunanRkt" pr JOIN "User" u on pr.submit_by = u.id ${where} GROUP BY u.name`,
       ),
     ]);
 
@@ -205,6 +228,10 @@ export class PenyusunanRktService {
         file.push(pendukung);
       }
 
+      const history = check.history || { user: [], approvedAt: [] };
+      mock.status = VerificationStatus.on_verification;
+      mock.verification_role_target = VerificationRoleStep[Math.max(history.user.length, 1)];
+
       const [rkt_x_iku, rkt_x_rab, newRkt] = await Promise.all([
         this._createRktXIku(body.iku_data, check.id, trx),
         this._createRktXRab(body.rab_data, check.id, trx),
@@ -244,7 +271,7 @@ export class PenyusunanRktService {
       let verification_role_target = check.verification_role_target;
 
       if (body.status === VerificationStatus.approved) {
-        verification_role_target = VerificationRoleStep[Math.max(history.user.length, 1)];
+        verification_role_target = VerificationRoleStep[Math.max(history.user.length, 0) + 1];
 
         if (verification_role_target) {
           body.status = VerificationStatus.on_verification;
@@ -257,8 +284,8 @@ export class PenyusunanRktService {
         }
       }
 
-      if (body.status === VerificationStatus.rejected) {
-        verification_role_target = VerificationRoleStep[0];
+      if (body.status === VerificationStatus.revision) {
+        verification_role_target = RejectionRoleTarget[Math.max(history.user.length, 0)];
       }
 
       await this.historyModel.create(
@@ -270,6 +297,14 @@ export class PenyusunanRktService {
         },
         { transaction: trx },
       );
+
+      console.log({
+        status: body.status,
+        verified_by: body.verified_by,
+        notes: body.notes,
+        history,
+        verification_role_target,
+      });
 
       const res = await this.rktModel.update(
         {

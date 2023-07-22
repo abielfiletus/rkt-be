@@ -28,6 +28,10 @@ export class AkademikService {
       return res.data?.data;
     } catch (err) {
       console.log(err);
+      if (err?.response?.data?.code === 401) {
+        await this._reLogin();
+        await this.mahasiswaAktif();
+      }
     }
   }
 
@@ -44,6 +48,10 @@ export class AkademikService {
       return res.data?.data;
     } catch (err) {
       console.log(err);
+      if (err?.response?.data?.code === 401) {
+        await this._reLogin();
+        await this.pendaftaranMahasiswa();
+      }
     }
   }
 
@@ -60,6 +68,10 @@ export class AkademikService {
       return res.data?.data;
     } catch (err) {
       console.log(err);
+      if (err?.response?.data?.code === 401) {
+        await this._reLogin();
+        await this.mahasiswaCuti();
+      }
     }
   }
 
@@ -76,6 +88,10 @@ export class AkademikService {
       return res.data?.data;
     } catch (err) {
       console.log(err);
+      if (err?.response?.data?.code === 401) {
+        await this._reLogin();
+        await this.mahasiswaDo();
+      }
     }
   }
 
@@ -92,6 +108,10 @@ export class AkademikService {
       return res.data?.data;
     } catch (err) {
       console.log(err);
+      if (err?.response?.data?.code === 401) {
+        await this._reLogin();
+        await this.mahasiswaAktifProdi(tahun);
+      }
     }
   }
 
@@ -108,12 +128,15 @@ export class AkademikService {
       return res.data?.data;
     } catch (err) {
       console.log(err);
+      if (err?.response?.data?.code === 401) {
+        await this._reLogin();
+        await this.mahasiswaAktifProdiByStatus(tahun);
+      }
     }
   }
 
-  private async _reLogin(funcName: any) {
-    await this._login();
-    return funcName();
+  private async _reLogin() {
+    return await this._login();
   }
 
   private async _login() {

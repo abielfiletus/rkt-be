@@ -41,7 +41,7 @@ export class RencanaStrategi extends Model {
   is_active: boolean;
 
   @Column({
-    type: DataType.ENUM("1", "2", "3", "4"),
+    type: DataType.CHAR(1),
     defaultValue: VerificationStatus.pending,
   })
   status: VerificationStatus;

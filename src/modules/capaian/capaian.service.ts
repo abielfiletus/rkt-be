@@ -50,10 +50,19 @@ export class CapaianService {
 
     if (!include) include = [{ model: PenyusunanRkt }, { model: CapaianXIku }];
 
-    if (params.name) where["$rkt.name$"] = { [Op.iLike]: `%${params.name}%` };
     if (params.status) where.status = params.status;
-    if (params.usulan_anggaran) where["$rkt.usulan_anggaran$"] = params.usulan_anggaran;
-    if (params.tahun) where["$rkt.tahun$"] = params.tahun;
+    if (params.name) {
+      include[0].where ||= {};
+      include[0].where["name"] = { [Op.iLike]: `%${params.name}%` };
+    }
+    if (params.usulan_anggaran) {
+      include[0].where ||= {};
+      include[0].where["usulan_anggaran"] = params.usulan_anggaran;
+    }
+    if (params.tahun) {
+      include[0].where ||= {};
+      include[0].where["tahun"] = params.tahun;
+    }
 
     const [data, recordsFiltered, recordsTotal] = await Promise.all([
       this.capaianModel.findAll({ where, limit, offset, order, include }),

@@ -235,7 +235,7 @@ export class DashboardService {
 
   async mahasiswaAktifProdiByStatus(tahun: string) {
     const data = await this.akademikService.mahasiswaAktifProdiByStatus(tahun);
-    console.log(data);
+
     const map = {
       4: { name: "Tidak Lulus", data: [] },
       6: { name: "Lulus", data: [] },

@@ -58,13 +58,15 @@ export class PenyusunanRktController {
   }
 
   @Get()
-  findAll(@Query() query: GetAllPenyusunanRktDto) {
+  findAll(@Query() query: GetAllPenyusunanRktDto, @Req() req: Record<string, any>) {
+    query.user_id = req.user?.id;
+    query.user_role = req.user?.role_id;
     return this.penyusunanRktService.findAll(query);
   }
 
   @Get("filter")
-  filter() {
-    return this.penyusunanRktService.filter();
+  filter(@Req() req: Record<string, any>) {
+    return this.penyusunanRktService.filter(req.user?.id, req.user?.role_id);
   }
 
   @Get(":id")

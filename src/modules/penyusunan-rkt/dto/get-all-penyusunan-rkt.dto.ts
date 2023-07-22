@@ -36,4 +36,7 @@ export class GetAllPenyusunanRktDto extends PaginationDto {
   @ApiProperty({ required: false, enum: Object.keys(PenyusunanRktScope) })
   @IsOptional()
   join: string;
+
+  user_role: number;
+  user_id: number;
 }

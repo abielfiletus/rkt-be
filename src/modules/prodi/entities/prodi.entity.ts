@@ -14,4 +14,9 @@ export class Prodi extends Model {
     unique: true,
   })
   kode_prodi: string;
+
+  @Column({
+    type: DataType.STRING(150),
+  })
+  initial: string;
 }

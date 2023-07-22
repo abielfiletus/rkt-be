@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/commo
 import { RktNoteHistoryService } from "./rkt-note-history.service";
 import { CreateRktNoteHistoryDto } from "./dto/create-rkt-note-history.dto";
 import { UpdateRktNoteHistoryDto } from "./dto/update-rkt-note-history.dto";
+import { Public } from "../../common";
 
 @Controller("rkt-note-history")
 export class RktNoteHistoryController {
@@ -17,6 +18,7 @@ export class RktNoteHistoryController {
     return this.rktNoteHistoryService.findAll();
   }
 
+  @Public(false)
   @Get("by-rkt/:rkt_id")
   byRkt(@Param("rkt_id") rkt_id: string) {
     return this.rktNoteHistoryService.byRkt(rkt_id);
