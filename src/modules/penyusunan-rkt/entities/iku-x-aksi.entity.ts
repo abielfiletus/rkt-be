@@ -19,7 +19,7 @@ export class IkuXAksi extends Model {
   rkt_x_iku_id: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     allowNull: false,
   })
   rencana_aksi: string;

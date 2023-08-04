@@ -20,6 +20,7 @@ export const VerificationStatusReverse = {
 
 export const VerificationRoleStep = [2, 3, 4, 5];
 export const RejectionRoleTarget = [6, 2, 2, 2];
+export const RejectionHistoryDelete = [0, 1, 1, 1];
 
 export enum CapaianStatus {
   un_processed = "0",

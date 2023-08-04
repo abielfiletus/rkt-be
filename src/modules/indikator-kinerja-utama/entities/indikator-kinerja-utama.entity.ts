@@ -10,7 +10,7 @@ export class IndikatorKinerjaUtama extends Model {
   no: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     allowNull: false,
   })
   name: string;

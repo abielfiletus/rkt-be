@@ -6,11 +6,12 @@ import { prepareQuery } from "../../util";
 import { Op } from "sequelize";
 import { GetAllCapaianDto } from "./dto/get-all-capaian.dto";
 import { PenyusunanRkt } from "../penyusunan-rkt/entities/penyusunan-rkt.entity";
-import { CapaianStatus } from "../../common";
+import { CapaianStatus, VerificationStatus } from "../../common";
 import { UpdateCapaianDto } from "./dto/update-capaian.dto";
 import { IndikatorKinerjaUtama } from "../indikator-kinerja-utama/entities/indikator-kinerja-utama.entity";
 import { RktXIku } from "../penyusunan-rkt/entities/rkt-x-iku.entity";
 import { IkuXAksi } from "../penyusunan-rkt/entities/iku-x-aksi.entity";
+import { PerjanjianKerja } from "../perjanjian-kerja/entities/perjanjian-kerja.entity";
 
 @Injectable()
 export class CapaianService {
@@ -21,6 +22,8 @@ export class CapaianService {
     private readonly capaianXIkuModel: typeof CapaianXIku,
     @Inject(PenyusunanRkt.name)
     private readonly rktModel: typeof PenyusunanRkt,
+    @Inject(PerjanjianKerja.name)
+    private readonly pkModel: typeof PerjanjianKerja,
   ) {}
 
   async create(body: CreateCapaianDto) {
@@ -109,6 +112,7 @@ export class CapaianService {
   async update(id: number, body: UpdateCapaianDto) {
     const trx = await this.capaianXIkuModel.sequelize.transaction();
     try {
+      let id;
       await Promise.all(
         body.data.map(async (item) => {
           const mock = {
@@ -118,13 +122,40 @@ export class CapaianService {
             [`strategi_${body.tw_index}`]: item.strategi,
           };
 
-          await this.capaianXIkuModel.update(mock, {
+          if (body.tw_index === 4) {
+            mock.status = CapaianStatus.complete;
+          } else {
+            mock.status = CapaianStatus.processed;
+          }
+
+          const res = await this.capaianXIkuModel.update(mock, {
             where: { id: item.id_capaian_iku },
             transaction: trx,
             returning: true,
           });
+
+          if (res[1]?.[0]?.capaian_id) {
+            await this.capaianModel.update(
+              { status: body.tw_index === 4 ? CapaianStatus.complete : CapaianStatus.processed },
+              { where: { id: res[1][0].capaian_id } },
+            );
+            if (body.tw_index === 4) id = res[1][0].capaian_id;
+          }
         }),
       );
+
+      if (id) {
+        const detail = await this.capaianModel.findByPk(id, { raw: true });
+        const check = await this.rktModel.findByPk(detail.rkt_id, { raw: true });
+        await this.pkModel.create(
+          {
+            rkt_id: check.id,
+            submit_by: check.submit_by,
+            status: VerificationStatus.no_action,
+          },
+          { transaction: trx },
+        );
+      }
 
       await trx.commit();
 

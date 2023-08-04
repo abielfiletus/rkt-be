@@ -11,7 +11,10 @@ export class ConfigService {
 
   async findAll(params: GetAllConfigDto) {
     // eslint-disable-next-line prefer-const
-    let { where, include, order, offset, limit } = prepareQuery(params, {});
+    let { where, include, order, offset, limit } = prepareQuery(
+      { ...params, sort_field: "id" },
+      {},
+    );
 
     if (params.name) where.name = { [Op.iLike]: `%${params.name}%` };
 

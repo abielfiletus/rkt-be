@@ -9,6 +9,7 @@ import { Op, Transaction } from "sequelize";
 import { prepareQuery, RollbackFile, romanize, UploadFile } from "../../util";
 import {
   HttpMessage,
+  RejectionHistoryDelete,
   RejectionRoleTarget,
   ValidationMessage,
   VerificationRoleStep,
@@ -80,11 +81,6 @@ export class PenyusunanRktService {
           { surat_usulan, kak, referensi_harga, pendukung, no_pengajuan },
           { where: { id: rkt.id }, transaction: trx, returning: true },
         ),
-        this.capaianService.create({
-          rkt_id: rkt.id,
-          iku_data: body.iku_data.map((item) => item.iku_id),
-          trx,
-        }),
       ]);
 
       await trx.commit();
@@ -124,6 +120,9 @@ export class PenyusunanRktService {
         ...where,
         [Op.or]: [{ submit_by: params.user_id }, { verification_role_target: params.user_role }],
       };
+    }
+    if (params.user_role !== 6) {
+      where.status = { [Op.ne]: VerificationStatus.rejected };
     }
 
     const [data, recordsFiltered, recordsTotal] = await Promise.all([
@@ -230,7 +229,7 @@ export class PenyusunanRktService {
 
       const history = check.history || { user: [], approvedAt: [] };
       mock.status = VerificationStatus.on_verification;
-      mock.verification_role_target = VerificationRoleStep[Math.max(history.user.length, 1)];
+      mock.verification_role_target = VerificationRoleStep[Math.max(history.user.length, 0)];
 
       const [rkt_x_iku, rkt_x_rab, newRkt] = await Promise.all([
         this._createRktXIku(body.iku_data, check.id, trx),
@@ -250,7 +249,9 @@ export class PenyusunanRktService {
   async approval(id: number, body: VerifyPenyusunanRktDto) {
     const trx = await this.rktModel.sequelize.transaction();
     try {
-      const check = await this.rktModel.findByPk(id, { raw: true });
+      const check = await this.rktModel.findByPk(id, {
+        include: { model: RktXIku, as: "rkt_x_iku" },
+      });
       const status = (" " + body.status).slice(1);
 
       if (!check) {
@@ -285,7 +286,13 @@ export class PenyusunanRktService {
       }
 
       if (body.status === VerificationStatus.revision) {
-        verification_role_target = RejectionRoleTarget[Math.max(history.user.length, 0)];
+        const targetIndex = Math.max(history.user.length, 0);
+        verification_role_target = RejectionRoleTarget[targetIndex];
+        if (history.user?.length && targetIndex) {
+          const targetToRemove = RejectionHistoryDelete[targetIndex];
+          history.user = history.user.slice(0, targetToRemove);
+          history.approvedAt = history.approvedAt.slice(0, targetToRemove);
+        }
       }
 
       await this.historyModel.create(
@@ -297,14 +304,6 @@ export class PenyusunanRktService {
         },
         { transaction: trx },
       );
-
-      console.log({
-        status: body.status,
-        verified_by: body.verified_by,
-        notes: body.notes,
-        history,
-        verification_role_target,
-      });
 
       const res = await this.rktModel.update(
         {
@@ -318,14 +317,11 @@ export class PenyusunanRktService {
       );
 
       if (body.status === VerificationStatus.done) {
-        await this.pkModel.create(
-          {
-            rkt_id: id,
-            submit_by: check.submit_by,
-            status: VerificationStatus.no_action,
-          },
-          { transaction: trx },
-        );
+        await this.capaianService.create({
+          rkt_id: id,
+          iku_data: check.rkt_x_iku.map((item) => item.iku_id),
+          trx,
+        });
       }
 
       await trx.commit();
