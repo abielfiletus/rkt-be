@@ -2,6 +2,9 @@ import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize
 import { PenyusunanRkt } from "../../penyusunan-rkt/entities/penyusunan-rkt.entity";
 import { VerificationStatus } from "../../../common";
 import { User } from "../../user/entities/user.entity";
+import { RktXIku } from "../../penyusunan-rkt/entities/rkt-x-iku.entity";
+import { IkuXAksi } from "../../penyusunan-rkt/entities/iku-x-aksi.entity";
+import { IndikatorKinerjaUtama } from "../../indikator-kinerja-utama/entities/indikator-kinerja-utama.entity";
 
 @Table({ freezeTableName: true })
 export class PerjanjianKerja extends Model {
@@ -53,10 +56,27 @@ export class PerjanjianKerja extends Model {
 
 export const PerjanjianKerjaScope = {
   all: [
-    { model: User, as: "user_submit", attributes: { exclude: ["password"] } },
+    { model: User, as: "user_submit", attributes: { exclude: ["password"] }, required: true },
     { model: User, as: "user_verified", attributes: { exclude: ["password"] } },
-    { model: PenyusunanRkt, as: "rkt" },
+    {
+      model: PenyusunanRkt,
+      as: "rkt",
+      required: true,
+      include: [
+        {
+          model: RktXIku,
+          as: "rkt_x_iku",
+          attributes: [],
+          include: [
+            { model: IkuXAksi, as: "iku_x_aksi", attributes: [] },
+            { model: IndikatorKinerjaUtama, as: "iku", attributes: [], required: true },
+          ],
+        },
+      ],
+    },
   ],
-  rkt: [{ model: PenyusunanRkt, as: "rkt" }],
-  user_submit: [{ model: User, as: "user_submit", attributes: { exclude: ["password"] } }],
+  rkt: [{ model: PenyusunanRkt, as: "rkt", required: true }],
+  user_submit: [
+    { model: User, as: "user_submit", attributes: { exclude: ["password"] }, required: true },
+  ],
 };

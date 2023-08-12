@@ -10,6 +10,7 @@ import {
   Req,
   HttpException,
   HttpStatus,
+  Res,
 } from "@nestjs/common";
 import { PerjanjianKerjaService } from "./perjanjian-kerja.service";
 import { CreatePerjanjianKerjaDto } from "./dto/create-perjanjian-kerja.dto";
@@ -19,6 +20,7 @@ import { VerifyPerjanjianKerjaDto } from "./dto/verify-perjanjian-kerja.dto";
 import { ApiBearerAuth, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { Public, ValidationMessage } from "../../common";
 import * as fileType from "file-type";
+import { FastifyReply } from "fastify";
 
 @ApiTags("Perjanjian Kerja")
 @Controller("perjanjian-kerja")
@@ -55,9 +57,19 @@ export class PerjanjianKerjaController {
   }
 
   @Get("download-draft/:id")
-  @Public()
   downloadDraft(@Param("id") id: string) {
     return this.perjanjianKerjaService.download(+id);
+  }
+
+  @Get("download")
+  async download(@Query() query: GetAllPerjanjianKerjaDto, @Res() res: FastifyReply) {
+    const file = await this.perjanjianKerjaService.downloadExcel(query);
+
+    return res
+      .status(HttpStatus.OK)
+      .header("Cross-Origin-Resource-Policy", "cross-origin")
+      .type(file.type)
+      .send(file.buffer);
   }
 
   @Get(":id")

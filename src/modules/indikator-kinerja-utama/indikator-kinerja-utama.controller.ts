@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  Req,
+  Res,
+  HttpStatus,
+} from "@nestjs/common";
 import { IndikatorKinerjaUtamaService } from "./indikator-kinerja-utama.service";
 import {
   CreateIndikatorKinerjaUtamaDto,
@@ -7,6 +19,7 @@ import {
 } from "./dto";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Public } from "../../common";
+import { FastifyReply } from "fastify";
 
 @ApiTags("Indikator Kinerja Utama")
 @Controller("indikator-kinerja-utama")
@@ -32,12 +45,22 @@ export class IndikatorKinerjaUtamaController {
     return this.indikatorKinerjaUtamaService.findMultipleId(id.split(","));
   }
 
+  @Get("download")
+  async download(@Query() query: GetAllIndikatorKinerjaUtamaDto, @Res() res: FastifyReply) {
+    const file = await this.indikatorKinerjaUtamaService.download(query);
+
+    return res
+      .status(HttpStatus.OK)
+      .header("Cross-Origin-Resource-Policy", "cross-origin")
+      .type(file.type)
+      .send(file.buffer);
+  }
+
   @Public(false)
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.indikatorKinerjaUtamaService.findOne(+id);
   }
-  a;
 
   @Patch(":id")
   update(@Param("id") id: string, @Body() body: UpdateIndikatorKinerjaUtamaDto) {

@@ -6,20 +6,24 @@ import { RktXRab } from "./entities/rkt-x-rab.entity";
 import { RktXIku } from "./entities/rkt-x-iku.entity";
 import { IkuXAksi } from "./entities/iku-x-aksi.entity";
 import { Op, Transaction } from "sequelize";
-import { prepareQuery, RollbackFile, romanize, UploadFile } from "../../util";
+import { currencyFormatter, prepareQuery, RollbackFile, romanize, UploadFile } from "../../util";
 import {
   HttpMessage,
   RejectionHistoryDelete,
   RejectionRoleTarget,
+  Timezone,
   ValidationMessage,
   VerificationRoleStep,
   VerificationStatus,
+  VerificationStatusExcel,
 } from "../../common";
 import { IndikatorKinerjaUtama } from "../indikator-kinerja-utama/entities/indikator-kinerja-utama.entity";
 import { GetAllPenyusunanRktDto } from "./dto/get-all-penyusunan-rkt.dto";
 import { PerjanjianKerja } from "../perjanjian-kerja/entities/perjanjian-kerja.entity";
 import { RktNoteHistory } from "../rkt-note-history/entities/rkt-note-history.entity";
-import { CapaianService } from "../capaian/capaian.service";
+import { excel } from "../../util/excel";
+import * as fs from "fs";
+import * as moment from "moment-timezone";
 
 @Injectable()
 export class PenyusunanRktService {
@@ -38,7 +42,6 @@ export class PenyusunanRktService {
     private readonly pkModel: typeof PerjanjianKerja,
     @Inject(RktNoteHistory.name)
     private readonly historyModel: typeof RktNoteHistory,
-    private readonly capaianService: CapaianService,
   ) {}
 
   async create(body: CreatePenyusunanRktDto) {
@@ -121,7 +124,7 @@ export class PenyusunanRktService {
         [Op.or]: [{ submit_by: params.user_id }, { verification_role_target: params.user_role }],
       };
     }
-    if (params.user_role !== 6) {
+    if ([3, 4, 5].includes(params.user_role)) {
       where.status = { [Op.ne]: VerificationStatus.rejected };
     }
 
@@ -135,7 +138,10 @@ export class PenyusunanRktService {
   }
 
   findOne(id: number) {
-    return this.rktModel.findByPk(id, { include: PenyusunanRktScope.all });
+    return this.rktModel.findByPk(id, {
+      include: PenyusunanRktScope.all,
+      order: [[{ model: RktXIku, as: "rkt_x_iku" }, "order", "asc"]],
+    });
   }
 
   async filter(user_id: number, role: number) {
@@ -307,7 +313,8 @@ export class PenyusunanRktService {
 
       const res = await this.rktModel.update(
         {
-          status: body.status,
+          status:
+            body.status === VerificationStatus.done ? VerificationStatus.approved : body.status,
           verified_by: body.verified_by,
           notes: body.notes,
           history,
@@ -317,11 +324,14 @@ export class PenyusunanRktService {
       );
 
       if (body.status === VerificationStatus.done) {
-        await this.capaianService.create({
-          rkt_id: id,
-          iku_data: check.rkt_x_iku.map((item) => item.iku_id),
-          trx,
-        });
+        await this.pkModel.create(
+          {
+            rkt_id: id,
+            submit_by: check.submit_by,
+            status: VerificationStatus.no_action,
+          },
+          { transaction: trx },
+        );
       }
 
       await trx.commit();
@@ -349,6 +359,140 @@ export class PenyusunanRktService {
       await trx.rollback();
       throw err;
     }
+  }
+
+  async download(params: GetAllPenyusunanRktDto) {
+    let where: Record<string, any> = {};
+
+    if (params.tahun) where.tahun = params.tahun;
+    if (params.name) where.name = { [Op.iLike]: `%${params.name}%` };
+    if (params.submit_name) where["$user_submit.name$"] = params.submit_name;
+    if (params.submit_id) where.submit_by = params.submit_id;
+    if (params.submit_prodi) where["$user_submit.kode_prodi$"] = params.submit_prodi;
+    if (params.status) where.status = params.status;
+
+    if (params.user_role !== 1) {
+      where = {
+        ...where,
+        [Op.or]: [{ submit_by: params.user_id }, { verification_role_target: params.user_role }],
+      };
+    }
+    if ([3, 4, 5].includes(params.user_role)) {
+      where.status = { [Op.ne]: VerificationStatus.rejected };
+    }
+
+    const rawData = await this.rktModel.findAll({
+      where,
+      include: PenyusunanRktScope.all,
+      order: [[{ model: RktXIku, as: "rkt_x_iku" }, "order", "asc"]],
+    });
+
+    const data = [];
+    let highestIkuCount = 0;
+    let highestAksiCount = 0;
+
+    rawData.map((item, i) => {
+      if (item.rkt_x_iku.length > highestIkuCount) highestIkuCount = item.rkt_x_iku.length;
+
+      const add = !["3", "5"].includes(item.status) ? item.verification_role.name : "";
+      const rowData = {
+        no: i + 1,
+        title: item.name,
+        year: item.tahun,
+        budget: currencyFormatter.format(item.usulan_anggaran),
+        target: item.target_perjanjian_kerja + "%",
+        created_by: item.user_submit.name,
+        created_at: moment(item.createdAt).tz(Timezone).format("DD MMMM YYYY HH:mm"),
+        last_status: VerificationStatusExcel[item.status] + add,
+        last_updated: moment(item.updatedAt).tz(Timezone).format("DD MMMM YYYY HH:mm"),
+        last_note: [VerificationStatus.rejected, VerificationStatus.revision].includes(item.status)
+          ? item.notes
+          : "",
+      };
+
+      for (const [i, rkt] of item.rkt_x_iku.entries()) {
+        if (rkt.iku_x_aksi.length > highestAksiCount) highestAksiCount = rkt.iku_x_aksi.length;
+
+        const index = i + 1;
+        rowData["iku_" + index] = rkt.iku.name;
+        rowData["iku_tw_1_" + index] = rkt.tw_1;
+        rowData["iku_tw_2_" + index] = rkt.tw_2;
+        rowData["iku_tw_3_" + index] = rkt.tw_3;
+        rowData["iku_tw_4_" + index] = rkt.tw_4;
+        rowData["iku_total_" + index] = rkt.total;
+
+        for (const [j, aksi] of rkt.iku_x_aksi.entries()) {
+          const aksiIndex = j + 1;
+          rowData["iku_" + index + "_aksi_" + aksiIndex] = aksi.rencana_aksi;
+        }
+      }
+
+      data.push(rowData);
+    });
+
+    const header = {
+      No: "no",
+      "Nama Usulan Kegiatan": "title",
+      "Tahun Usulan": "year",
+      "Usulan Anggaran": "budget",
+      "Target Perjanjian Kerja": "target",
+    };
+    const field = {
+      no: "no",
+      title: "title",
+      year: "year",
+      budget: "budget",
+      target: "target",
+    };
+
+    for (let i = 1; i <= highestIkuCount; i++) {
+      header["IKU " + i] = "iku_" + i;
+      header["TW 1 IKU " + i] = "iku_tw_1_" + i;
+      header["TW 2 IKU " + i] = "iku_tw_2_" + i;
+      header["TW 3 IKU " + i] = "iku_tw_3_" + i;
+      header["TW 4 IKU " + i] = "iku_tw_4_" + i;
+      header["TOTAL IKU " + i] = "iku_total_" + i;
+
+      field["iku_" + i] = "iku_" + i;
+      field["iku_tw_1_" + i] = "iku_tw_1_" + i;
+      field["iku_tw_2_" + i] = "iku_tw_2_" + i;
+      field["iku_tw_3_" + i] = "iku_tw_3_" + i;
+      field["iku_tw_4_" + i] = "iku_tw_4_" + i;
+      field["iku_total_" + i] = "iku_total_" + i;
+
+      for (let j = 1; j <= highestAksiCount; j++) {
+        header["Rencana Aksi " + j + " IKU " + i] = "iku_" + i + "_aksi_" + j;
+        field["iku_" + i + "_aksi_" + j] = "iku_" + i + "_aksi_" + j;
+      }
+    }
+
+    header["Diajukan Pada"] = "created_at";
+    header["Terakhir Diupdate"] = "last_updated";
+    header["Status Terakhir"] = "last_status";
+    header["Keterangan Revisi / Ditolak"] = "last_note";
+    header["Dibuat Oleh"] = "created_by";
+
+    field["created_at"] = "created_at";
+    field["last_updated"] = "last_updated";
+    field["last_status"] = "last_status";
+    field["last_note"] = "last_note";
+    field["created_by"] = "created_by";
+
+    return await excel
+      .init({
+        filename: `Report Penyusunan RKT ${Date.now()}`,
+        headerTitle: header,
+        rowsData: data,
+        rowsField: field,
+        showGridLines: false,
+      })
+      .addWorkSheet({ name: "Data" })
+      .addHeader()
+      .addRows()
+      .autoSizeColumn()
+      .addBgColor()
+      .addBorder()
+      .generate();
   }
 
   private async _createRktXIku(data: Array<Record<string, any>>, rkt_id: number, trx: Transaction) {
@@ -379,6 +523,7 @@ export class PenyusunanRktService {
             tw_3: iku.tw_3,
             tw_4: iku.tw_4,
             total: iku.total,
+            order: i,
           },
           { transaction: trx },
         );

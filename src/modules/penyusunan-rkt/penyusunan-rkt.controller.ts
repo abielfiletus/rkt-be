@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
 } from "@nestjs/common";
 import { PenyusunanRktService } from "./penyusunan-rkt.service";
 import { CreatePenyusunanRktDto } from "./dto/create-penyusunan-rkt.dto";
@@ -18,6 +19,7 @@ import * as fileType from "file-type";
 import { ValidationMessage } from "../../common";
 import { GetAllPenyusunanRktDto } from "./dto/get-all-penyusunan-rkt.dto";
 import { VerifyPenyusunanRktDto } from "./dto/verify-penyusunan-rkt.dto";
+import { FastifyReply } from "fastify";
 
 @ApiTags("Penyusunan RKT")
 @Controller("penyusunan-rkt")
@@ -67,6 +69,23 @@ export class PenyusunanRktController {
   @Get("filter")
   filter(@Req() req: Record<string, any>) {
     return this.penyusunanRktService.filter(req.user?.id, req.user?.role_id);
+  }
+
+  @Get("download")
+  async download(
+    @Query() query: GetAllPenyusunanRktDto,
+    @Res() res: FastifyReply,
+    @Req() req: Record<string, any>,
+  ) {
+    query.user_id = req.user?.id;
+    query.user_role = req.user?.role_id;
+    const file = await this.penyusunanRktService.download(query);
+
+    return res
+      .status(HttpStatus.OK)
+      .header("Cross-Origin-Resource-Policy", "cross-origin")
+      .type(file.type)
+      .send(file.buffer);
   }
 
   @Get(":id")

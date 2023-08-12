@@ -3,8 +3,11 @@ import { RktNoteHistoryService } from "./rkt-note-history.service";
 import { CreateRktNoteHistoryDto } from "./dto/create-rkt-note-history.dto";
 import { UpdateRktNoteHistoryDto } from "./dto/update-rkt-note-history.dto";
 import { Public } from "../../common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
+@ApiTags("RKT Note History")
 @Controller("rkt-note-history")
+@ApiBearerAuth()
 export class RktNoteHistoryController {
   constructor(private readonly rktNoteHistoryService: RktNoteHistoryService) {}
 

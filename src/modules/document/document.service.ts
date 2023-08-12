@@ -90,7 +90,7 @@ export class DocumentService {
       folder: "uploads/document/",
       field: "file",
       allowedSize: "1 mb",
-      allowedExt: ["jpg", "jpeg", "png"],
+      allowedExt: ["pdf"],
     });
   }
 }

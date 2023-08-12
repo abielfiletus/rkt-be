@@ -11,6 +11,8 @@ import {
 import { isNotEmpty, prepareQuery } from "../../util";
 import { Op } from "sequelize";
 import { HttpMessage } from "../../common";
+import * as fs from "fs";
+import { excel } from "../../util/excel";
 
 @Injectable()
 export class IndikatorKinerjaUtamaService {
@@ -41,7 +43,6 @@ export class IndikatorKinerjaUtamaService {
   }
 
   async findMultipleId(ids: Array<string>) {
-    console.log(ids);
     return this.ikuModel.findAll({ where: { id: { [Op.in]: ids } } });
   }
 
@@ -71,5 +72,56 @@ export class IndikatorKinerjaUtamaService {
 
   remove(id: number) {
     return this.ikuModel.destroy({ where: { id } });
+  }
+
+  async download(params: GetAllIndikatorKinerjaUtamaDto) {
+    const where: Record<string, any> = {};
+
+    if (isNotEmpty(params.is_active)) where.is_active = params.is_active;
+    if (params.no) where.no = params.no;
+    if (params.name) where.name = { [Op.iLike]: `%${params.name}%` };
+
+    const rawData = await this.ikuModel.findAll({ where, include: IndikatorKinerjaUtamaScope.all });
+
+    const data = [];
+    rawData.map((item, i) => {
+      data.push({
+        no: item.no,
+        name: item.name,
+        is_active: item.is_active ? "Aktif" : "Tidak Aktif",
+        created_by: item.user_create.name,
+        numbering: i + 1,
+      });
+    });
+    const header = {
+      No: "numbering",
+      "Nomor IKU": "no",
+      "Nama IKU": "name",
+      Status: "is_active",
+      "Dibuat Oleh": "created_by",
+    };
+    const field = {
+      numbering: "numbering",
+      no: "no",
+      name: "name",
+      is_active: "is_active",
+      created_by: "created_by",
+    };
+
+    return await excel
+      .init({
+        filename: `Data Indikator Kinerja Unit ${Date.now()}`,
+        headerTitle: header,
+        rowsData: data,
+        rowsField: field,
+        showGridLines: false,
+      })
+      .addWorkSheet({ name: "Data" })
+      .addHeader()
+      .addRows()
+      .autoSizeColumn()
+      .addBgColor()
+      .addBorder()
+      .generate();
   }
 }

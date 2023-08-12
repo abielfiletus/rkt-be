@@ -52,6 +52,11 @@ export class RktXIku extends Model {
   })
   total: number;
 
+  @Column({
+    type: DataType.INTEGER,
+  })
+  order: number;
+
   @BelongsTo(() => PenyusunanRkt, "rkt_id")
   rkt: PenyusunanRkt;
 

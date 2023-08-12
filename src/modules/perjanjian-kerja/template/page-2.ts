@@ -46,7 +46,7 @@ export const page2Template = (param: IParams) => {
   table = [
     `
       <tr>
-        <td rowspan="${rowspanRkt}" style="vertical-align: center">Workshop Wirausaha</td>
+        <td rowspan="${rowspanRkt}" style="vertical-align: center">${param.rkt_data.name}</td>
         <td rowspan="${rowspanFirst}">${firstIku.iku.name}</td>
         <td>${firstIku.iku_x_aksi[0].rencana_aksi}</td>
         <td rowspan="${rowspanFirst}" align="center">${firstIku.total}</td>
