@@ -18,7 +18,7 @@ import { UpdatePerjanjianKerjaDto } from "./dto/update-perjanjian-kerja.dto";
 import { GetAllPerjanjianKerjaDto } from "./dto/get-all-perjanjian-kerja.dto";
 import { VerifyPerjanjianKerjaDto } from "./dto/verify-perjanjian-kerja.dto";
 import { ApiBearerAuth, ApiConsumes, ApiTags } from "@nestjs/swagger";
-import { Public, ValidationMessage } from "../../common";
+import { ValidationMessage, VerificationStatus } from "../../common";
 import * as fileType from "file-type";
 import { FastifyReply } from "fastify";
 
@@ -83,6 +83,7 @@ export class PerjanjianKerjaController {
     @Body() body: VerifyPerjanjianKerjaDto,
     @Req() req: Record<string, any>,
   ) {
+    body.status = VerificationStatus[body.status];
     body.verified_by = req.user.id;
     return this.perjanjianKerjaService.verify(+id, body);
   }

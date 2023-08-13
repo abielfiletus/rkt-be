@@ -16,7 +16,7 @@ import { PenyusunanRktService } from "./penyusunan-rkt.service";
 import { CreatePenyusunanRktDto } from "./dto/create-penyusunan-rkt.dto";
 import { ApiBearerAuth, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import * as fileType from "file-type";
-import { ValidationMessage } from "../../common";
+import { ValidationMessage, VerificationStatus } from "../../common";
 import { GetAllPenyusunanRktDto } from "./dto/get-all-penyusunan-rkt.dto";
 import { VerifyPenyusunanRktDto } from "./dto/verify-penyusunan-rkt.dto";
 import { FastifyReply } from "fastify";
@@ -99,6 +99,7 @@ export class PenyusunanRktController {
     @Body() body: VerifyPenyusunanRktDto,
     @Req() req: Record<string, any>,
   ) {
+    body.status = VerificationStatus[body.status];
     body.verified_by = req.user.id;
     body.verified_name = req.user.name;
     return this.penyusunanRktService.approval(+id, body);
