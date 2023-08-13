@@ -277,7 +277,7 @@ export class PerjanjianKerjaService {
 
       const res = await this.pkModel.update(
         {
-          status: VerificationStatus[body.status],
+          status: body.status,
           verified_by: body.verified_by,
           notes: body.notes,
         },
