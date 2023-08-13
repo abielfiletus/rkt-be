@@ -119,6 +119,7 @@ export const PenyusunanRktScope = {
     {
       model: RktXIku,
       as: "rkt_x_iku",
+      required: true,
       include: [
         { model: IkuXAksi, as: "iku_x_aksi" },
         { model: IndikatorKinerjaUtama, as: "iku", required: true },
@@ -134,6 +135,7 @@ export const PenyusunanRktScope = {
   iku: {
     model: RktXIku,
     as: "rkt_x_iku",
+    required: true,
     include: [
       { model: IkuXAksi, as: "iku_x_aksi" },
       { model: IndikatorKinerjaUtama, as: "iku", required: true },
