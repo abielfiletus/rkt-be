@@ -6,7 +6,7 @@ import { Transform } from "class-transformer";
 export class VerifyPenyusunanRktDto {
   @ApiProperty({ enum: Object.keys(VerificationStatus) })
   @IsNotEmpty()
-  @IsEnum(Object.values(VerificationStatus))
+  @IsEnum(Object.keys(VerificationStatus))
   @Transform(({ value }) => VerificationStatus[value])
   status: VerificationStatus;
 
