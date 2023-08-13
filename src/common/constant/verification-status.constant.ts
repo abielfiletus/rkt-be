@@ -23,7 +23,7 @@ export const VerificationStatusExcel = {
   "1": "Ditolak Oleh ",
   "2": "Permintaan Revisi Oleh ",
   "3": "Selesai",
-  "4": "Disetujui Oleh ",
+  "4": "Disetujui",
   "5": "Tidak ada aksi",
   "6": "butuh Persetujuan Dari ",
 };

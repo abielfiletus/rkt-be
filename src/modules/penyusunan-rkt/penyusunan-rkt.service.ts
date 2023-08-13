@@ -394,7 +394,7 @@ export class PenyusunanRktService {
     rawData.map((item, i) => {
       if (item.rkt_x_iku.length > highestIkuCount) highestIkuCount = item.rkt_x_iku.length;
 
-      const add = !["3", "5"].includes(item.status) ? item.verification_role.name : "";
+      const add = !["3", "4", "5"].includes(item.status) ? item.verification_role.name : "";
       const rowData = {
         no: i + 1,
         title: item.name,
