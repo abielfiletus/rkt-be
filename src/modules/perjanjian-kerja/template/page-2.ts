@@ -6,6 +6,22 @@ interface IParams {
   rkt_data?: Record<string, any>;
 }
 
+export const HeaderTemplate = (logo: string) => {
+  return `
+    <div style="width: 750px; height: 60px; margin-left: 9.5rem; position: absolute; top: -30px">
+      <div style="position:relative; padding-bottom: 20px">
+        <img src="${logo}" alt="" style="position: absolute; width: 70px; height: 70px">
+        <div style="text-align: center; flex-grow: 1">
+          <p style="margin-top: 0; margin-bottom: 0; font-size: 1.5rem">KEMENTERIAN PENDIDIKAN DAN KEBUDAYAAN</p>
+          <p style="font-weight: bold;margin-top: 7px; margin-bottom: 7px; font-size: 1.5rem">Politeknik Negeri Ambon</p>
+          <p style="margin-top: 0; margin-bottom: 0">Jl. Ir. M. Putuhena, Wailela - Rumah Tiga, Ambon - Maluku </p>
+        </div>
+      </div>
+      <div style="height: 2px; width: 100%; border-bottom: 1px black solid"></div>
+    </div>
+  `;
+};
+
 export const page2Template = (param: IParams) => {
   let rowspanRkt = 0;
   let table = [];
@@ -86,17 +102,7 @@ export const page2Template = (param: IParams) => {
 </head>
 <body>
 <div style="position:relative;">
-  <div style="width: 750px; height: 60px; margin-left: 9.5rem; position: absolute; top: -30px">
-    <div style="position:relative; padding-bottom: 20px">
-      <img src="${param.logo}" alt="" style="position: absolute; width: 70px; height: 70px">
-      <div style="text-align: center; flex-grow: 1">
-        <p style="margin-top: 0; margin-bottom: 0; font-size: 1.5rem">KEMENTERIAN PENDIDIKAN DAN KEBUDAYAAN</p>
-        <p style="font-weight: bold;margin-top: 7px; margin-bottom: 7px; font-size: 1.5rem">Politeknik Negeri Ambon</p>
-        <p style="margin-top: 0; margin-bottom: 0">Jl. Ir. M. Putuhena, Wailela - Rumah Tiga, Ambon - Maluku </p>
-      </div>
-    </div>
-    <div style="height: 2px; width: 100%; border-bottom: 1px black solid"></div>
-  </div>
+  ${HeaderTemplate(param.logo)}
   <div style="padding-top: 90px">
     <div style="text-align: center">
       <p style="font-weight: bold; margin-bottom: 0">TARGET KINERJA</p>

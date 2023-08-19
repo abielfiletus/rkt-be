@@ -16,6 +16,7 @@ import { GetAllCapaianDto } from "./dto/get-all-capaian.dto";
 import { UpdateCapaianDto } from "./dto/update-capaian.dto";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { FastifyReply } from "fastify";
+import { DownloadPdfCapaianDto } from "./dto/download-pdf-capaian.dto";
 
 @ApiTags("Capaian")
 @Controller("capaian")
@@ -26,6 +27,11 @@ export class CapaianController {
   @Post()
   create(@Body() body: CreateCapaianDto) {
     return this.capaianService.create(body);
+  }
+
+  @Post("download-pdf")
+  downloadPdf(@Body() body: DownloadPdfCapaianDto) {
+    return this.capaianService.downloadPdf(body);
   }
 
   @Get()

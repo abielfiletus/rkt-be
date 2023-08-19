@@ -14,6 +14,11 @@ import { IkuXAksi } from "../penyusunan-rkt/entities/iku-x-aksi.entity";
 import { PerjanjianKerja } from "../perjanjian-kerja/entities/perjanjian-kerja.entity";
 import * as moment from "moment-timezone";
 import { excel } from "../../util/excel";
+import { pdfTemplate } from "./template/pdf";
+import * as fs from "fs";
+import { DownloadPdfCapaianDto } from "./dto/download-pdf-capaian.dto";
+import * as puppeteer from "puppeteer";
+import { User } from "../user/entities/user.entity";
 
 @Injectable()
 export class CapaianService {
@@ -94,7 +99,10 @@ export class CapaianService {
 
   async detailByRkt(id: number) {
     const rkt = await this.rktModel.findByPk(id, {
-      include: { model: RktXIku, include: [{ model: IndikatorKinerjaUtama }, { model: IkuXAksi }] },
+      include: [
+        { model: RktXIku, include: [{ model: IndikatorKinerjaUtama }, { model: IkuXAksi }] },
+        { model: User, as: "user_submit", attributes: ["name"] },
+      ],
     });
 
     const iku_id = rkt.rkt_x_iku.map((item) => item.iku_id);
@@ -293,5 +301,39 @@ export class CapaianService {
       .addBgColor()
       .addBorder()
       .generate();
+  }
+
+  async downloadPdf(payload: DownloadPdfCapaianDto) {
+    const browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    try {
+      const data = await this.detailByRkt(payload.rkt_id);
+
+      const logo = fs.readFileSync("logo-polnam.png", { encoding: "base64" });
+      const html = pdfTemplate({
+        logo: "data:image/png;base64," + logo,
+        tw_checked: payload.tw_checked,
+        data: JSON.parse(JSON.stringify(data)),
+      });
+
+      const tab = await browser.newPage();
+      await tab.setContent(html, { waitUntil: "load" });
+      const file = await tab.pdf({
+        path: "capaian-" + data.name + ".pdf",
+        format: "a4",
+        landscape: true,
+      });
+
+      return {
+        file: Buffer.from(file).toString("base64"),
+        recommendation_filename: "capaian-" + data.name + ".pdf",
+      };
+    } catch (err) {
+      throw err;
+    } finally {
+      await browser.close();
+    }
   }
 }
