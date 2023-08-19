@@ -50,7 +50,7 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   handleRequest(err, user, info) {
     if (err || !user) {
       const errMessage: IOutputResponse = {
-        code: HttpStatus.FORBIDDEN,
+        code: HttpStatus.UNAUTHORIZED,
         status: false,
         msg: "Unauthorized",
         error: HttpMessage.unauthorized,
