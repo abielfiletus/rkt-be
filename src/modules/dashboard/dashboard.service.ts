@@ -167,7 +167,7 @@ export class DashboardService {
 
     const legends = [];
     const counts = [];
-    data.map((item) => {
+    data?.map((item) => {
       counts.push(item.count);
       legends.push(item.tahun);
     });
@@ -180,7 +180,7 @@ export class DashboardService {
 
     const legends = [];
     const counts = [];
-    data.map((item) => {
+    data?.map((item) => {
       counts.push(item.count);
       legends.push(item.tahun);
     });
@@ -193,7 +193,7 @@ export class DashboardService {
 
     const legends = [];
     const counts = [];
-    data.map((item) => {
+    data?.map((item) => {
       counts.push(item.count);
       legends.push(item.tahun);
     });
@@ -206,7 +206,7 @@ export class DashboardService {
 
     const legends = [];
     const counts = [];
-    data.map((item) => {
+    data?.map((item) => {
       counts.push(item.count);
       legends.push(item.tahun);
     });

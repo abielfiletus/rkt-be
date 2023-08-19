@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsInt, IsOptional, ValidateIf } from "class-validator";
-import { CapaianStatus, ValidationMessage } from "../../../common";
+import { CapaianStatus, PaginationDto, ValidationMessage } from "../../../common";
 
-export class GetAllCapaianDto {
+export class GetAllCapaianDto extends PaginationDto {
   @ApiProperty({ required: false })
   @IsOptional()
   name: string;
