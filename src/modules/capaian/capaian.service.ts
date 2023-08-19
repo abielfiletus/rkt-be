@@ -6,13 +6,7 @@ import { currencyFormatter, prepareQuery } from "../../util";
 import { Op } from "sequelize";
 import { GetAllCapaianDto } from "./dto/get-all-capaian.dto";
 import { PenyusunanRkt } from "../penyusunan-rkt/entities/penyusunan-rkt.entity";
-import {
-  CapaianStatus,
-  CapaianStatusExcel,
-  Timezone,
-  VerificationStatus,
-  VerificationStatusExcel,
-} from "../../common";
+import { CapaianStatus, CapaianStatusExcel, Timezone } from "../../common";
 import { UpdateCapaianDto } from "./dto/update-capaian.dto";
 import { IndikatorKinerjaUtama } from "../indikator-kinerja-utama/entities/indikator-kinerja-utama.entity";
 import { RktXIku } from "../penyusunan-rkt/entities/rkt-x-iku.entity";
@@ -20,7 +14,6 @@ import { IkuXAksi } from "../penyusunan-rkt/entities/iku-x-aksi.entity";
 import { PerjanjianKerja } from "../perjanjian-kerja/entities/perjanjian-kerja.entity";
 import * as moment from "moment-timezone";
 import { excel } from "../../util/excel";
-import * as fs from "fs";
 
 @Injectable()
 export class CapaianService {
@@ -61,24 +54,21 @@ export class CapaianService {
     let { where, include, order, offset, limit } = prepareQuery(params, {});
 
     if (!include) {
-      include = [
-        { model: PenyusunanRkt },
-        { model: CapaianXIku, include: [{ model: IndikatorKinerjaUtama, required: true }] },
-      ];
+      include = { model: PenyusunanRkt };
     }
 
     if (params.status) where.status = params.status;
     if (params.name) {
-      include[0].where ||= {};
-      include[0].where["name"] = { [Op.iLike]: `%${params.name}%` };
+      include.where ||= {};
+      include.where["name"] = { [Op.iLike]: `%${params.name}%` };
     }
     if (params.usulan_anggaran) {
-      include[0].where ||= {};
-      include[0].where["usulan_anggaran"] = params.usulan_anggaran;
+      include.where ||= {};
+      include.where["usulan_anggaran"] = params.usulan_anggaran;
     }
     if (params.tahun) {
-      include[0].where ||= {};
-      include[0].where["tahun"] = params.tahun;
+      include.where ||= {};
+      include.where["tahun"] = params.tahun;
     }
 
     const [data, recordsFiltered, recordsTotal] = await Promise.all([
@@ -126,7 +116,6 @@ export class CapaianService {
   async update(id: number, body: UpdateCapaianDto) {
     const trx = await this.capaianXIkuModel.sequelize.transaction();
     try {
-      let id;
       await Promise.all(
         body.data.map(async (item) => {
           const mock = {
