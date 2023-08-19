@@ -324,6 +324,7 @@ export class CapaianService {
         path: "capaian-" + data.name + ".pdf",
         format: "a4",
         landscape: true,
+        printBackground: true,
       });
 
       return {
