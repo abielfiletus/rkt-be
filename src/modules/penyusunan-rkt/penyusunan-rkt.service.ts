@@ -22,7 +22,6 @@ import { GetAllPenyusunanRktDto } from "./dto/get-all-penyusunan-rkt.dto";
 import { PerjanjianKerja } from "../perjanjian-kerja/entities/perjanjian-kerja.entity";
 import { RktNoteHistory } from "../rkt-note-history/entities/rkt-note-history.entity";
 import { excel } from "../../util/excel";
-import * as fs from "fs";
 import * as moment from "moment-timezone";
 
 @Injectable()
@@ -493,6 +492,12 @@ export class PenyusunanRktService {
       .addBgColor()
       .addBorder()
       .generate();
+  }
+
+  async outstandingSummary(role_id: number) {
+    return await this.rktModel.count({
+      where: { status: VerificationStatus.on_verification, verification_role_target: role_id },
+    });
   }
 
   private async _createRktXIku(data: Array<Record<string, any>>, rkt_id: number, trx: Transaction) {

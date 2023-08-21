@@ -35,7 +35,8 @@ export class IndikatorKinerjaUtamaController {
 
   @Public(false)
   @Get()
-  findAll(@Query() query: GetAllIndikatorKinerjaUtamaDto) {
+  findAll(@Query() query: GetAllIndikatorKinerjaUtamaDto, @Req() req: Record<string, any>) {
+    query.role_id = req.user.role_id;
     return this.indikatorKinerjaUtamaService.findAll(query);
   }
 

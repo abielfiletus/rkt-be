@@ -88,6 +88,11 @@ export class PenyusunanRktController {
       .send(file.buffer);
   }
 
+  @Get("outstanding-summary")
+  outstandingSummary(@Req() req: Record<string, any>) {
+    return this.penyusunanRktService.outstandingSummary(req.user?.role_id);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.penyusunanRktService.findOne(+id);

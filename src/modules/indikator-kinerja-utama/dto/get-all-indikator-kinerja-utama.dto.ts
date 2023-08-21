@@ -29,4 +29,6 @@ export class GetAllIndikatorKinerjaUtamaDto extends PaginationDto {
   })
   @IsOptional()
   join: string;
+
+  role_id: number;
 }
