@@ -116,16 +116,7 @@ export class PenyusunanRktService {
     if (params.submit_id) where.submit_by = params.submit_id;
     if (params.submit_prodi) where["$user_submit.kode_prodi$"] = params.submit_prodi;
     if (params.status) where.status = params.status;
-
-    if (params.user_role !== 1) {
-      where = {
-        ...where,
-        [Op.or]: [{ submit_by: params.user_id }, { verification_role_target: params.user_role }],
-      };
-    }
-    if ([3, 4, 5].includes(params.user_role)) {
-      where.status = { [Op.ne]: VerificationStatus.rejected };
-    }
+    if (params.user_role === 2) where.submit_by = params.user_id;
 
     const [data, recordsFiltered, recordsTotal] = await Promise.all([
       this.rktModel.findAll({ where, limit, offset, order, include }),
