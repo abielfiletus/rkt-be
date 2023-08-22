@@ -33,6 +33,8 @@ export class IndikatorKinerjaUtamaService {
     if (params.name) where.name = { [Op.iLike]: `%${params.name}%` };
     if (![1, 3].includes(params.role_id)) where.is_active = true;
 
+    if (!order.length) order = [["id", "asc"]];
+
     const [data, recordsFiltered, recordsTotal] = await Promise.all([
       this.ikuModel.findAll({ where, limit, offset, order, include }),
       this.ikuModel.count({ where, include }),
