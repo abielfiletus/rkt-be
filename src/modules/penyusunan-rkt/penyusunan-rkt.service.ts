@@ -78,7 +78,11 @@ export class PenyusunanRktService {
         .init({
           filename: `RAB ${rkt.id}`,
           headerTitle: header,
-          rowsData: body.rab_data,
+          rowsData: body.rab_data.map((item, i) => ({
+            ...item,
+            no: i + 1,
+            price: currencyFormatter.format(item.price),
+          })),
           rowsField: field,
           showGridLines: false,
         })
