@@ -264,25 +264,25 @@ export const pdfTemplate = (param: IParams) => {
         <td width="2%">TARGET PERJANJIAN</td>
         ${
           tw_checked.includes("1")
-            ? `<td width="2%">TARGET TW1</td>
+            ? `<td width="2%">CAPAIAN TARGET TW1</td>
            <td width="${availableWidth}%">ANALISA PROGRESS CAPAIAN TW1</td>`
             : ""
         }
         ${
           tw_checked.includes("2")
-            ? `<td width="2%">TARGET TW2</td>
+            ? `<td width="2%">CAPAIAN TARGET TW2</td>
            <td width="${availableWidth}%">ANALISA PROGRESS CAPAIAN TW2</td>`
             : ""
         }
         ${
           tw_checked.includes("3")
-            ? `<td width="2%">TARGET TW3</td>
+            ? `<td width="2%">CAPAIAN TARGET TW3</td>
            <td width="${availableWidth}%">ANALISA PROGRESS CAPAIAN TW3</td>`
             : ""
         }
         ${
           tw_checked.includes("4")
-            ? `<td width="2%">TARGET TW4</td>
+            ? `<td width="2%">CAPAIAN TARGET TW4</td>
            <td width="${availableWidth}%">ANALISA PROGRESS CAPAIAN TW4</td>`
             : ""
         }

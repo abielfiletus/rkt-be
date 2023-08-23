@@ -67,6 +67,11 @@ export class PenyusunanRkt extends Model {
   pendukung: string;
 
   @Column({
+    type: DataType.STRING,
+  })
+  excel_rab: string;
+
+  @Column({
     type: DataType.CHAR(1),
     defaultValue: VerificationStatus.on_verification,
   })

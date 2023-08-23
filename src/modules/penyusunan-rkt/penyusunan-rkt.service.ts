@@ -23,6 +23,7 @@ import { PerjanjianKerja } from "../perjanjian-kerja/entities/perjanjian-kerja.e
 import { RktNoteHistory } from "../rkt-note-history/entities/rkt-note-history.entity";
 import { excel } from "../../util/excel";
 import * as moment from "moment-timezone";
+import * as fs from "fs";
 
 @Injectable()
 export class PenyusunanRktService {
@@ -60,6 +61,35 @@ export class PenyusunanRktService {
         { transaction: trx },
       );
 
+      const header = {
+        No: "no",
+        "Nama Rincian": "name",
+        "Unit/Vol": "unit",
+        Harga: "price",
+      };
+      const field = {
+        no: "no",
+        name: "name",
+        unit: "unit",
+        price: "price",
+      };
+
+      const excelRab = await excel
+        .init({
+          filename: `RAB ${rkt.id}`,
+          headerTitle: header,
+          rowsData: body.rab_data,
+          rowsField: field,
+          showGridLines: false,
+        })
+        .addWorkSheet({ name: "Data" })
+        .addHeader()
+        .addRows()
+        .autoSizeColumn()
+        .addBgColor()
+        .addBorder()
+        .generate();
+
       const [surat_usulan, kak, referensi_harga, pendukung] = await Promise.all([
         this._uploadFile(body.surat_usulan, "surat_usulan", "surat_usulan-" + rkt.id),
         this._uploadFile(body.kak, "kak", "kak-" + rkt.id),
@@ -67,10 +97,13 @@ export class PenyusunanRktService {
         this._uploadFile(body.pendukung, "pendukung", "pendukung-" + rkt.id),
       ]);
 
+      fs.writeFileSync("uploads/rkt/" + excelRab.filename, new Buffer(excelRab.buffer));
+
       file.push(surat_usulan);
       file.push(kak);
       file.push(referensi_harga);
       file.push(pendukung);
+      file.push("uploads/rkt/" + excelRab.filename);
 
       const month = new Date().getMonth() + 1;
       const year = new Date().getFullYear();
@@ -80,7 +113,14 @@ export class PenyusunanRktService {
         this._createRktXIku(body.iku_data, rkt.id, trx),
         this._createRktXRab(body.rab_data, rkt.id, trx),
         this.rktModel.update(
-          { surat_usulan, kak, referensi_harga, pendukung, no_pengajuan },
+          {
+            surat_usulan,
+            kak,
+            referensi_harga,
+            pendukung,
+            no_pengajuan,
+            excel_rab: "uploads/rkt/" + excelRab.filename,
+          },
           { where: { id: rkt.id }, transaction: trx, returning: true },
         ),
       ]);
