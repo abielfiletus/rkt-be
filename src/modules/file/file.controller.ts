@@ -14,7 +14,7 @@ export class FileController {
     try {
       const filepath = req.raw.url.replace("/api/v1/", "");
 
-      const file = fs.readFileSync(`${__dirname}/../../../${filepath}`);
+      const file = fs.readFileSync(`${process.cwd()}/${decodeURI(filepath)}`);
       const type = await fileType.fromBuffer(file);
 
       return res
