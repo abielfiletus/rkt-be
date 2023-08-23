@@ -97,7 +97,7 @@ export class PenyusunanRktService {
         this._uploadFile(body.pendukung, "pendukung", "pendukung-" + rkt.id),
       ]);
 
-      fs.writeFileSync("uploads/rkt/" + excelRab.filename, new Buffer(excelRab.buffer));
+      fs.writeFileSync("uploads/rkt/" + excelRab.filename, Buffer.from(excelRab.buffer));
 
       file.push(surat_usulan);
       file.push(kak);
