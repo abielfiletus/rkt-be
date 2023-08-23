@@ -35,7 +35,9 @@ export const pdfTemplate = (param: IParams) => {
           <td valign="center" rowspan="${rowspanIku}" >${data.target_perjanjian_kerja}</td>
         ${
           tw_checked.includes("1")
-            ? `<td rowspan="${rowspanIku}" >${iku.tw_1}</td>
+            ? `
+           <td rowspan="${rowspanIku}" >${iku.tw_1}</td>
+           <td rowspan="${rowspanIku}" >${iku.capaian.capaian_1}</td>
            <td rowspan="${rowspanIku}" >
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${iku.capaian.progress_1}</p>
@@ -48,7 +50,9 @@ export const pdfTemplate = (param: IParams) => {
         }
         ${
           tw_checked.includes("2")
-            ? `<td rowspan="${rowspanIku}" >${iku.tw_2}</td>
+            ? `
+           <td rowspan="${rowspanIku}" >${iku.tw_2}</td>
+           <td rowspan="${rowspanIku}" >${iku.capaian.capaian_2}</td>
            <td rowspan="${rowspanIku}" >
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${iku.capaian.progress_2}</p>
@@ -61,7 +65,9 @@ export const pdfTemplate = (param: IParams) => {
         }
         ${
           tw_checked.includes("3")
-            ? `<td rowspan="${rowspanIku}" >${iku.tw_3}</td>
+            ? `
+           <td rowspan="${rowspanIku}" >${iku.tw_3}</td>
+           <td rowspan="${rowspanIku}" >${iku.capaian.capaian_3}</td>
            <td rowspan="${rowspanIku}" >
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${iku.capaian.progress_3}</p>
@@ -74,7 +80,9 @@ export const pdfTemplate = (param: IParams) => {
         }
         ${
           tw_checked.includes("4")
-            ? `<td rowspan="${rowspanIku}" >${iku.tw_4}</td>
+            ? `
+           <td rowspan="${rowspanIku}" >${iku.tw_4}</td>
+           <td rowspan="${rowspanIku}" >${iku.capaian.capaian_4}</td>
            <td rowspan="${rowspanIku}" >
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${iku.capaian.progress_4}</p>
@@ -105,7 +113,9 @@ export const pdfTemplate = (param: IParams) => {
         <td rowspan="${rowspanFirst}" valign="center">${data.target_perjanjian_kerja}</td>
         ${
           tw_checked.includes("1")
-            ? `<td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_1}</td>
+            ? `
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_1}</td>
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.capaian.capaian_1}</td>
            <td rowspan="${rowspanFirst}" valign="center">
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${firstIku.capaian.progress_1}</p>
@@ -118,7 +128,9 @@ export const pdfTemplate = (param: IParams) => {
         }
         ${
           tw_checked.includes("2")
-            ? `<td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_2}</td>
+            ? `
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_2}</td>
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.capaian.capaian_2}</td>
            <td rowspan="${rowspanFirst}" valign="center">
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${firstIku.capaian.progress_2}</p>
@@ -131,7 +143,9 @@ export const pdfTemplate = (param: IParams) => {
         }
         ${
           tw_checked.includes("3")
-            ? `<td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_3}</td>
+            ? `
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_3}</td>
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.capaian.capaian_3}</td>
            <td rowspan="${rowspanFirst}" valign="center">
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${firstIku.capaian.progress_3}</p>
@@ -144,7 +158,9 @@ export const pdfTemplate = (param: IParams) => {
         }
         ${
           tw_checked.includes("4")
-            ? `<td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_4}</td>
+            ? `
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.tw_4}</td>
+           <td rowspan="${rowspanFirst}" valign="center">${firstIku.capaian.capaian_4}</td>
            <td rowspan="${rowspanFirst}" valign="center">
              <p class="progress-title">Progress / Kegiatan :</p>
              <p class="progress-value">${firstIku.capaian.progress_4}</p>
