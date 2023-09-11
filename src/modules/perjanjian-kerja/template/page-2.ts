@@ -8,16 +8,15 @@ interface IParams {
 
 export const HeaderTemplate = (logo: string) => {
   return `
-    <div style="width: 750px; height: 60px; margin-left: 9.5rem; position: absolute; top: -30px">
-      <div style="position:relative; padding-bottom: 20px">
-        <img src="${logo}" alt="" style="position: absolute; width: 70px; height: 70px">
-        <div style="text-align: center; flex-grow: 1">
-          <p style="margin-top: 0; margin-bottom: 0; font-size: 1.5rem">KEMENTERIAN PENDIDIKAN DAN KEBUDAYAAN</p>
-          <p style="font-weight: bold;margin-top: 7px; margin-bottom: 7px; font-size: 1.5rem">Politeknik Negeri Ambon</p>
-          <p style="margin-top: 0; margin-bottom: 0">Jl. Ir. M. Putuhena, Wailela - Rumah Tiga, Ambon - Maluku </p>
+    <div style="padding-bottom: 10px; border-bottom: 1px black solid">
+      <div style="width: 740px; margin-left: auto; margin-right: auto">
+        <img src="${logo}" alt="" style="position: absolute; width: 60px; height: 60px">
+        <div style="text-align: center; flex-grow: 1;padding-left: 90px;padding-right: 90px">
+          <p style="margin-top: 0; margin-bottom: 0; font-size: 1.12rem">KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET DAN TEKNOLOGI</p>
+          <p style="font-weight: bold;margin-top: 0; margin-bottom: 0; font-size: 1.12rem">POLITEKNIK NEGERI AMBON</p>
+          <small style="text-decoration: underline; font-size: 14px">Jl. Ir. M. Putuhena, Wailela - Rumahtiga Ambon, Tel. (0911) 322715 Fax. (0911) 322715</small>
         </div>
       </div>
-      <div style="height: 2px; width: 100%; border-bottom: 1px black solid"></div>
     </div>
   `;
 };
@@ -103,7 +102,7 @@ export const page2Template = (param: IParams) => {
 <body>
 <div style="position:relative;">
   ${HeaderTemplate(param.logo)}
-  <div style="padding-top: 90px">
+  <div style="padding-top: 10px">
     <div style="text-align: center">
       <p style="font-weight: bold; margin-bottom: 0">TARGET KINERJA</p>
     </div>
@@ -113,7 +112,7 @@ export const page2Template = (param: IParams) => {
         <div style="width: 20px">:</div>
         <div>${param.no_rkt}</div>
       </div>
-      <div style="display: flex; margin-top: 10px; margin-bottom: 10px">
+      <div style="display: flex; margin-top: 5px; margin-bottom: 5px">
         <div style="width: 150px">Usulan Anggaran</div>
         <div style="width: 20px">:</div>
         <div>${param.usulan_anggaran}</div>

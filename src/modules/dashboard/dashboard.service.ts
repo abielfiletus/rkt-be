@@ -1,11 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { PenyusunanRkt } from "../penyusunan-rkt/entities/penyusunan-rkt.entity";
 import { AkademikService } from "../third-party/akademik.service";
+import { Prodi } from "../prodi/entities/prodi.entity";
 
 @Injectable()
 export class DashboardService {
   constructor(
     @Inject(PenyusunanRkt.name) private readonly rktModel: typeof PenyusunanRkt,
+    @Inject(Prodi.name) private readonly prodiModel: typeof Prodi,
     private readonly akademikService: AkademikService,
   ) {}
 
@@ -41,6 +43,7 @@ export class DashboardService {
           map.Ditolak.data[item.tahun] = +item.count;
           break;
         case "3":
+        case "4":
           map.Disetujui.data[item.tahun] = +item.count;
           break;
       }
@@ -56,7 +59,8 @@ export class DashboardService {
   }
 
   async rktByStatus(tahun: string) {
-    const data = await this.rktModel.sequelize.query(`
+    const [data, prodi] = await Promise.all([
+      this.rktModel.sequelize.query(`
         select count(prkt.id), prkt.tahun, prkt.status, p.initial
         from "PenyusunanRkt" prkt
                  join "User" u on prkt.submit_by = u.id
@@ -64,13 +68,19 @@ export class DashboardService {
         where prkt.tahun::integer = ${tahun}
         group by prkt.tahun, prkt.status, p.initial
         order by prkt.tahun
-    `);
+    `),
+      this.prodiModel.findAll(),
+    ]);
 
     const chartData = {};
     const legends = [];
-    data[0]?.map((item: Record<string, any>) => {
+    prodi.map((item) => {
       chartData[item.initial] = 0;
       legends.push(item.initial);
+    });
+
+    data[0]?.map((item: Record<string, any>) => {
+      chartData[item.initial] = 0;
     });
 
     const map = {
@@ -94,6 +104,7 @@ export class DashboardService {
           map.Ditolak.data[item.initial] = +item.count;
           break;
         case "3":
+        case "4":
           map.Disetujui.data[item.initial] = +item.count;
           break;
       }
@@ -109,7 +120,8 @@ export class DashboardService {
   }
 
   async rktByCapaian(tahun: string) {
-    const data = await this.rktModel.sequelize.query(`
+    const [data, prodi] = await Promise.all([
+      this.rktModel.sequelize.query(`
         select count(prkt.id), prkt.tahun, c.status, p.initial
         from "Capaian" c
              join "PenyusunanRkt" prkt on c.rkt_id = prkt.id
@@ -118,13 +130,19 @@ export class DashboardService {
         where prkt.tahun::integer = ${tahun}
         group by prkt.tahun, c.status, p.initial
         order by prkt.tahun
-    `);
+    `),
+      this.prodiModel.findAll(),
+    ]);
 
     const chartData = {};
     const legends = [];
-    data[0]?.map((item: Record<string, any>) => {
+    prodi.map((item) => {
       chartData[item.initial] = 0;
       legends.push(item.initial);
+    });
+
+    data[0]?.map((item: Record<string, any>) => {
+      chartData[item.initial] = 0;
     });
 
     const map = {

@@ -26,12 +26,12 @@ export const page1Template = (params: IParams) => `<!doctype html>
 </head>
 <body>
   <div >
-    <div style="position:relative; padding-bottom: 20px">
-      <img src="${params.logo}" alt="" style="position: absolute; width: 70px; height: 70px">
-      <div style="text-align: center; flex-grow: 1">
-        <p style="margin-top: 0; margin-bottom: 0; font-size: 1.5rem">KEMENTERIAN PENDIDIKAN DAN KEBUDAYAAN</p>
-        <p style="font-weight: bold;margin-top: 7px; margin-bottom: 7px; font-size: 1.5rem">Politeknik Negeri Ambon</p>
-        <p style="margin-top: 0; margin-bottom: 0">Jl. Ir. M. Putuhena, Wailela - Rumah Tiga, Ambon - Maluku </p>
+    <div style="position:relative; padding-bottom: 10px">
+      <img src="${params.logo}" alt="" style="position: absolute; width: 60px; height: 60px">
+      <div style="text-align: center; flex-grow: 1;padding-left: 60px;padding-right: 60px">
+        <p style="margin-top: 0; margin-bottom: 0; font-size: 1.12rem">KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET DAN TEKNOLOGI</p>
+        <p style="font-weight: bold;margin-top: 0; margin-bottom: 0; font-size: 1.12rem">POLITEKNIK NEGERI AMBON</p>
+        <small style="text-decoration: underline; font-size: 14px">Jl. Ir. M. Putuhena, Wailela - Rumahtiga Ambon, Tel. (0911) 322715 Fax. (0911) 322715</small>
       </div>
     </div>
     <div style="height: 2px; width: 100%; border-bottom: 1px black solid"></div>

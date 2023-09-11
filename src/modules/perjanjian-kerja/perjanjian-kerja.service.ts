@@ -196,7 +196,7 @@ export class PerjanjianKerjaService {
         format: "a4",
         printBackground: true,
         landscape: true,
-        margin: { top: "50px", bottom: "50px" },
+        margin: { top: "0px", bottom: "50px" },
         displayHeaderFooter: true,
         footerTemplate: `<div style="text-align: right; width: 100%; padding-right: 20px"><img src="${qr}" alt="" style="width: 40px; height: 40px"></div>`,
         headerTemplate: "<span></span>",
