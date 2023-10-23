@@ -27,8 +27,13 @@ export class RolesGuard implements CanActivate {
 
     const url = req.raw.url.split("/");
     const module = url[3].replace(/(\?.*)/, "");
-    let method = url[4] && url[4].replace(/(\?.*)/, "") === "verify" ? "APPROVE" : req.raw.method;
-    method = url[4] && url[4].replace(/(\?.*)/, "") === "print" ? "DOWNLOAD" : method;
+    let method = req.raw.method;
+
+    if (url[4]) {
+      if (url[4].replace(/(\?.*)/, "") === "verify") method = "APPROVE";
+      if (["print", "download"].includes(url[4].replace(/(\?.*)/, ""))) method = "DOWNLOAD";
+    }
+
     method = HttpMethod[method];
 
     const [userDB, moduleDB] = await Promise.all([
