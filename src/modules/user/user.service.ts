@@ -55,6 +55,8 @@ export class UserService {
     // eslint-disable-next-line prefer-const
     let { where, include, order, offset, limit } = prepareQuery(params, UserScopes);
 
+    where = { ...where, is_testing: false };
+
     if (params.email) where.email = params.email;
     if (params.nip) where.nip = params.nip;
     if (params.name) where.name = { [Op.iLike]: `%${params.name}%` };

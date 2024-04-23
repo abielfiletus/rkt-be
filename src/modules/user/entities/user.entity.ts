@@ -53,6 +53,12 @@ export class User extends Model {
   })
   avatar: string;
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  is_testing: boolean;
+
   @BelongsTo(() => Role, "role_id")
   role: Role;
 
